@@ -42,7 +42,6 @@ describe('simple test demo', function () {
       .catch(err => {
         info(err)
       })
-
   })
   // #endregion
 })
