@@ -17,7 +17,6 @@ describe('simple test demo', function () {
   })
 
   beforeEach('do something', () => {
-
   })
 
   // #region
@@ -40,7 +39,8 @@ describe('simple test demo', function () {
         done()
       })
       .catch(err => {
-        info(err)
+        // info(err)
+        done(err)
       })
   })
   // #endregion
