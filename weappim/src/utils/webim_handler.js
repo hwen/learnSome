@@ -734,6 +734,7 @@ function onSendMsg(msg, callback) {
     function(err) {
       webim.Log.error('发消息失败:' + err.ErrorInfo);
       console.error('发消息失败:' + err.ErrorInfo);
+      callback && callback(err);
     }
   );
 }
