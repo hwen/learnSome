@@ -1,130 +1,199 @@
 import webim from './../lib/webim';
 import webimhandler from './webim_handler';
 
-console.log(webim.Log);
+// 会话类型
+const C2C = webim.SESSION_TYPE.C2C;
+const GROUP = webim.SESSION_TYPE.GROUP;
 
 export default class IM {
   constructor(config, listeners) {
-    this.init(config);
+    this.config = Object.assign({}, config);
     this.listeners = listeners;
+    this.getPrePageC2CHistroyMsgInfoMap = {};
+    this.init(config);
+  }
+
+  initChat(selToID, selType = C2C, selSess = null) {
+    const avChatRoomId = selType === GROUP ? selToID : null;
+    Object.assign(this.config, {
+      selType,
+      selToID,
+      selSess
+    });
+    webimhandler.init({
+      accountMode: this.config.accountMode,
+      accountType: this.config.accountType,
+      sdkAppID: this.config.sdkappid,
+      avChatRoomId: avChatRoomId, // 默认房间群ID，群类型必须是直播聊天室（AVChatRoom），这个为官方测试ID(托管模式)
+      selType: selType,
+      selToID: selToID,
+      selSess: selSess // 当前聊天会话
+    });
   }
 
   init(config) {
     const that = this;
-
     const avChatRoomId = config.avChatRoomId;
-    webimhandler.init({
-      accountMode: config.accountMode,
-      accountType: config.accountType,
-      sdkAppID: config.sdkappid,
-      avChatRoomId: avChatRoomId, // 默认房间群ID，群类型必须是直播聊天室（AVChatRoom），这个为官方测试ID(托管模式)
-      selType: webim.SESSION_TYPE.GROUP,
-      selToID: avChatRoomId,
-      selSess: null // 当前聊天会话
-    });
+    this.isLogOn = config.isLogOn || false;
+
+    const selType = config.selType === 'C2C' ? C2C : GROUP;
+    this.initChat(config.selToID, selType);
     // 当前用户身份
-    const loginInfo = {
+    this.loginInfo = {
       sdkAppID: config.sdkappid, // 用户所属应用id,必填
       appIDAt3rd: config.sdkappid, // 用户所属应用id，必填
       accountType: config.accountType, // 用户所属应用帐号类型，必填
-      identifier: that.data.Identifier, // 当前用户ID,必须是否字符串类型，选填
-      identifierNick: that.data.Identifier, // 当前用户昵称，选填
-      userSig: that.data.UserSig // 当前用户身份凭证，必须是字符串类型，选填
+      identifier: config.Identifier, // 当前用户ID,必须是否字符串类型，选填
+      identifierNick: config.nickName || config.Identifier, // 当前用户昵称，选填
+      userSig: config.UserSig // 当前用户身份凭证，必须是字符串类型，选填
     };
 
-    // 监听（多终端同步）群系统消息方法，方法都定义在demo_group_notice.js文件中
+    // 监听（多终端同步）群系统消息方法
+    // TODO
     const onGroupSystemNotifys = {
       '5': webimhandler.onDestoryGroupNotify, // 群被解散(全员接收)
       '11': webimhandler.onRevokeGroupNotify, // 群已被回收(全员接收)
       '255': webimhandler.onCustomGroupNotify // 用户自定义通知(默认全员接收)
     };
 
-    // 监听连接状态回调变化事件
-    const onConnNotify = function(resp) {
-      switch (resp.ErrorCode) {
-        case webim.CONNECTION_STATUS.ON:
-          // webim.Log.warn('连接状态正常...');
-          break;
-        case webim.CONNECTION_STATUS.OFF:
-          webim.Log.warn(
-            '连接已断开，无法收到新消息，请检查下你的网络是否正常'
-          );
-          break;
-        default:
-          webim.Log.error('未知连接状态,status=' + resp.ErrorCode);
-          break;
-      }
-    };
-
+    const { onConnNotify, onMsgNotify, onLogin } = this.listeners;
     // 监听事件
     const listeners = {
-      onConnNotify: webimhandler.onConnNotify, // 选填
+      // 监听连接状态回调变化事件
+      onConnNotify: resp => {
+        let msg = '';
+        switch (resp.ErrorCode) {
+          case webim.CONNECTION_STATUS.ON:
+            // webim.Log.warn('连接状态正常...');
+            break;
+          case webim.CONNECTION_STATUS.OFF:
+            msg = '连接已断开，无法收到新消息，请检查下你的网络是否正常';
+            webim.Log.warn(msg);
+            break;
+          default:
+            msg = '未知连接状态,status=' + resp.ErrorCode;
+            webim.Log.error(msg);
+            break;
+        }
+        onConnNotify && onConnNotify(msg);
+      }, // 选填
       onMsgNotify: msgs => {
         console.log('receive msging........');
         // 监听新消息(私聊(包括普通消息和全员推送消息)，普通群(非直播聊天室)消息)事件，必填
-        webimhandler.onMsgNotify(msgs, this.listeners.onMsgNotify);
+        webimhandler.onMsgNotify(msgs, msgList => {
+          onMsgNotify && onMsgNotify(msgList);
+        });
       }
     };
 
     // 其他对象，选填
     const options = {
       isAccessFormalEnv: true, // 是否访问正式环境，默认访问正式，选填
-      isLogOn: false // 是否开启控制台打印日志,默认开启，选填
+      isLogOn: this.isLogOn // 是否开启控制台打印日志,默认开启，选填
     };
 
-    console.log('login ready...');
-    if (config.accountMode === 1) {
-      // 托管模式
-      webimhandler.sdkLogin(loginInfo, listeners, options, avChatRoomId);
-    } else {
-      // 独立模式
-      console.log('独立模式登陆中...');
-      console.log('loginInfo...');
-      console.log(loginInfo);
-      console.log('options...');
-      console.log(options);
-      webimhandler.sdkLogin(loginInfo, listeners, options, avChatRoomId);
-    }
-  }
-
-  sendMsg() {
-    webimhandler.onSendMsg();
-  }
-
-  loadMsgHistory() {}
-
-  // 上传图片
-  uploadPic() {
-    var uploadFiles = document.getElementById('upd_pic');
-    var file = uploadFiles.files[0];
-    var businessType; // 业务类型，1-发群图片，2-向好友发图片
-    if (selType == SessionType.C2C) {
-      // 向好友发图片
-      businessType = UploadPicBussinessType.C2C_MSG;
-    } else if (selType == SessionType.GROUP) {
-      // 发群图片
-      businessType = UploadPicBussinessType.GROUP_MSG;
-    }
-    // 封装上传图片请求
-    var opt = {
-      file: file, // 图片对象
-      onProgressCallBack: onProgressCallBack, // 上传图片进度条回调函数
-      // 'abortButton': document.getElementById('upd_abort'), //停止上传图片按钮
-      From_Account: loginInfo.identifier, // 发送者帐号
-      To_Account: selToID, // 接收者
-      businessType: businessType // 业务类型
-    };
-    // 上传图片
-    webim.uploadPic(
-      opt,
-      function(resp) {
-        // 上传成功发送图片
-        sendPic(resp);
-        $('#upload_pic_dialog').modal('hide');
-      },
-      function(err) {
-        console.log(err.ErrorInfo);
-      }
+    webimhandler.sdkLogin(
+      this.loginInfo,
+      listeners,
+      options,
+      avChatRoomId,
+      onLogin
     );
   }
+
+  sendMsg(msg, callback) {
+    webimhandler.onSendMsg(msg, callback);
+  }
+
+  loadMsgHistory(reqMsgCount, cbOk, cbError) {
+    console.log('loading history...');
+    const { selType } = this.config;
+    if (selType === C2C) {
+      this.getLastC2CHistoryMsgs(reqMsgCount, cbOk, cbError);
+    }
+  }
+
+  //获取最新的 C2C 历史消息,用于切换好友聊天，重新拉取好友的聊天消息
+  getLastC2CHistoryMsgs(reqMsgCount, cbOk, cbError) {
+    const { selType, selToID } = this.config;
+    console.log('获取前');
+    console.log(selType, selToID);
+    if (selType === GROUP) {
+      console.error('当前的聊天类型为群聊天，不能进行拉取好友历史消息操作');
+      return;
+    }
+    const cacheInfo = this.getPrePageC2CHistroyMsgInfoMap[selToID] || {};
+    const lastMsgTime = cacheInfo.LastMsgTime || 0; //第一次拉取好友历史消息时，必须传 0
+    const msgKey = cacheInfo.MsgKey || '';
+    const options = {
+      Peer_Account: selToID, //好友帐号
+      MaxCnt: reqMsgCount || 15, //拉取消息条数
+      LastMsgTime: lastMsgTime, //最近的消息时间，即从这个时间点向前拉取历史消息
+      MsgKey: msgKey
+    };
+    console.log('===========');
+    console.log(options);
+    webim.getC2CHistoryMsgs(
+      options,
+      resp => {
+        const complete = resp.Complete; //是否还有历史消息可以拉取，1-表示没有，0-表示有
+        const retMsgCount = resp.MsgCount; //返回的消息条数，小于或等于请求的消息条数，小于的时候，说明没有历史消息可拉取了
+        if (resp.MsgList.length === 0) {
+          webim.Log.error('没有历史消息了:data=' + JSON.stringify(options));
+          cbOk && cbOk(resp);
+          return;
+        }
+        this.getPrePageC2CHistroyMsgInfoMap[selToID] = {
+          //保留服务器返回的最近消息时间和消息Key,用于下次向前拉取历史消息
+          LastMsgTime: resp.LastMsgTime,
+          MsgKey: resp.MsgKey
+        };
+        cbOk && cbOk(resp);
+      },
+      cbError
+    );
+  }
+
+  // 上传图片
+  // uploadPic() {
+  //   const uploadFiles = document.getElementById('upd_pic');
+  //   var file = uploadFiles.files[0];
+  //   wx.chooseImage({
+  //     success: filePaths => {
+  //       console.log(filePaths);
+  //     },
+  //     fail: err => {
+  //       console.error(err);
+  //     }
+  //   });
+  //   var businessType; // 业务类型，1-发群图片，2-向好友发图片
+  //   if (this.config.selType === C2C) {
+  //     // 向好友发图片
+  //     businessType = UploadPicBussinessType.C2C_MSG;
+  //   } else if (this.config.selType === GROUP) {
+  //     // 发群图片
+  //     businessType = UploadPicBussinessType.GROUP_MSG;
+  //   }
+  //   // 封装上传图片请求
+  //   var opt = {
+  //     file: file, // 图片对象
+  //     onProgressCallBack: onProgressCallBack, // 上传图片进度条回调函数
+  //     // 'abortButton': document.getElementById('upd_abort'), //停止上传图片按钮
+  //     From_Account: loginInfo.identifier, // 发送者帐号
+  //     To_Account: selToID, // 接收者
+  //     businessType: businessType // 业务类型
+  //   };
+  //   // 上传图片
+  //   webim.uploadPic(
+  //     opt,
+  //     function(resp) {
+  //       // 上传成功发送图片
+  //       sendPic(resp);
+  //       $('#upload_pic_dialog').modal('hide');
+  //     },
+  //     function(err) {
+  //       console.log(err.ErrorInfo);
+  //     }
+  //   );
+  // }
 }

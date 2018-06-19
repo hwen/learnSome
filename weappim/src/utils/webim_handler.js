@@ -1,5 +1,5 @@
 /* eslint-disable */
-var webim = require('webim.js');
+var webim = require('./../lib/webim');
 var selToID,
   loginInfo,
   accountMode,
@@ -109,7 +109,7 @@ function handlderMsg(msg) {
 }
 
 //sdk登录
-function sdkLogin(userInfo, listeners, options, avChatRoomId) {
+function sdkLogin(userInfo, listeners, options, avChatRoomId, cb) {
   //web sdk 登录
   webim.login(
     userInfo,
@@ -118,7 +118,6 @@ function sdkLogin(userInfo, listeners, options, avChatRoomId) {
     function(identifierNick) {
       console.debug(identifierNick);
       //identifierNick为登录用户昵称(没有设置时，为帐号)，无登录态时为空
-      console.debug(identifierNick);
       webim.Log.info('webim登录成功');
       console.log('gg: webim 登陆成功.......');
       loginInfo = userInfo;
@@ -135,6 +134,7 @@ function sdkLogin(userInfo, listeners, options, avChatRoomId) {
           avChatRoomId && applyJoinBigGroup(avChatRoomId); //加入大群
         }
       );
+      cb && cb();
       //hideDiscussForm();//隐藏评论表单
       //initEmotionUL();//初始化表情
     },
@@ -204,6 +204,7 @@ function showMsg(msg) {
   isSelfSend = msg.getIsSend(); //消息是否为自己发的
   var content = '';
   switch (subType) {
+    case webim.C2C_MSG_SUB_TYPE.COMMON: // C2C消息
     case webim.GROUP_MSG_SUB_TYPE.COMMON: //群普通消息
       content = convertMsgtoHtml(msg);
       break;
@@ -715,17 +716,18 @@ function onSendMsg(msg, callback) {
       msg.addText(text_obj);
     }
   }
-  console.log('准备调用发消息接口');
+  console.log('准备调用发消息接口....');
   console.log(msg);
   webim.sendMsg(
     msg,
     function(resp) {
+      let content = '';
       if (selType == webim.SESSION_TYPE.C2C) {
         //私聊时，在聊天窗口手动添加一条发的消息，群聊时，长轮询接口会返回自己发的消息
-        showMsg(msg);
+        content = showMsg(msg);
       }
-      webim.Log.info('发消息成功');
-      callback && callback();
+      webim.Log.info('发消息成功....');
+      callback && callback(content);
 
       //hideDiscussForm();//隐藏评论表单
       //showDiscussTool();//显示评论工具栏

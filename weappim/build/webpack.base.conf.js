@@ -1,28 +1,28 @@
-var path = require('path')
-var fs = require('fs')
-var utils = require('./utils')
-var config = require('../config')
-var vueLoaderConfig = require('./vue-loader.conf')
-var MpvuePlugin = require('webpack-mpvue-asset-plugin')
-var glob = require('glob')
+var path = require('path');
+var fs = require('fs');
+var utils = require('./utils');
+var config = require('../config');
+var vueLoaderConfig = require('./vue-loader.conf');
+var MpvuePlugin = require('webpack-mpvue-asset-plugin');
+var glob = require('glob');
 
-function resolve (dir) {
-  return path.join(__dirname, '..', dir)
+function resolve(dir) {
+  return path.join(__dirname, '..', dir);
 }
 
-function getEntry (rootSrc, pattern) {
-  var files = glob.sync(path.resolve(rootSrc, pattern))
+function getEntry(rootSrc, pattern) {
+  var files = glob.sync(path.resolve(rootSrc, pattern));
   return files.reduce((res, file) => {
-    var info = path.parse(file)
-    var key = info.dir.slice(rootSrc.length + 1) + '/' + info.name
-    res[key] = path.resolve(file)
-    return res
-  }, {})
+    var info = path.parse(file);
+    var key = info.dir.slice(rootSrc.length + 1) + '/' + info.name;
+    res[key] = path.resolve(file);
+    return res;
+  }, {});
 }
 
-const appEntry = { app: resolve('./src/main.js') }
-const pagesEntry = getEntry(resolve('./src'), 'pages/**/main.js')
-const entry = Object.assign({}, appEntry, pagesEntry)
+const appEntry = { app: resolve('./src/main.js') };
+const pagesEntry = getEntry(resolve('./src'), 'pages/**/main.js');
+const entry = Object.assign({}, appEntry, pagesEntry);
 
 module.exports = {
   // 如果要自定义生成的 dist 目录里面的文件路径，
@@ -33,14 +33,15 @@ module.exports = {
   output: {
     path: config.build.assetsRoot,
     filename: '[name].js',
-    publicPath: process.env.NODE_ENV === 'production'
-      ? config.build.assetsPublicPath
-      : config.dev.assetsPublicPath
+    publicPath:
+      process.env.NODE_ENV === 'production'
+        ? config.build.assetsPublicPath
+        : config.dev.assetsPublicPath
   },
   resolve: {
     extensions: ['.js', '.vue', '.json'],
     alias: {
-      'vue': 'mpvue',
+      vue: 'mpvue',
       '@': resolve('src')
     },
     symlinks: false,
@@ -73,7 +74,7 @@ module.exports = {
             options: {
               checkMPEntry: true
             }
-          },
+          }
         ]
       },
       {
@@ -93,6 +94,10 @@ module.exports = {
         }
       },
       {
+        test: /\.scss$/,
+        use: ['style-loader', 'css-loader', 'sass-loader']
+      },
+      {
         test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
         loader: 'url-loader',
         options: {
@@ -102,7 +107,5 @@ module.exports = {
       }
     ]
   },
-  plugins: [
-    new MpvuePlugin()
-  ]
-}
+  plugins: [new MpvuePlugin()]
+};
