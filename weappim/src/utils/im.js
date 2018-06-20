@@ -47,9 +47,9 @@ export default class IM {
       sdkAppID: config.sdkappid, // 用户所属应用id,必填
       appIDAt3rd: config.sdkappid, // 用户所属应用id，必填
       accountType: config.accountType, // 用户所属应用帐号类型，必填
-      identifier: config.Identifier, // 当前用户ID,必须是否字符串类型，选填
-      identifierNick: config.nickName || config.Identifier, // 当前用户昵称，选填
-      userSig: config.UserSig // 当前用户身份凭证，必须是字符串类型，选填
+      identifier: config.identifier, // 当前用户ID,必须是否字符串类型，选填
+      identifierNick: config.nickName || config.identifier, // 当前用户昵称，选填
+      userSig: config.userSig // 当前用户身份凭证，必须是字符串类型，选填
     };
 
     // 监听（多终端同步）群系统消息方法
@@ -85,7 +85,16 @@ export default class IM {
         console.log('receive msging........');
         // 监听新消息(私聊(包括普通消息和全员推送消息)，普通群(非直播聊天室)消息)事件，必填
         webimhandler.onMsgNotify(msgs, msgList => {
-          onMsgNotify && onMsgNotify(msgList);
+          onMsgNotify &&
+            onMsgNotify(
+              msgList &&
+                msgList.filter(m => {
+                  const { selType, selToID, identifier } = this.config;
+                  /* eslint-disable */
+                  return m.sessType == selType;
+                  /* eslint-enable */
+                })
+            );
         });
       }
     };
@@ -114,6 +123,8 @@ export default class IM {
     const { selType } = this.config;
     if (selType === C2C) {
       webimhandler.getLastC2CHistoryMsgs(reqMsgCount, cbOk, cbError);
+    } else {
+      webimhandler.getLastGroupHistoryMsgs(reqMsgCount, cbOk, cbError);
     }
   }
 

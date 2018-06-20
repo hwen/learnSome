@@ -12,6 +12,7 @@ var selToID,
   selSessHeadUrl;
 
 var getPrePageC2CHistroyMsgInfoMap = {};
+var getPrePageGroupHistroyMsgInfoMap = {};
 // 会话类型
 const C2C = webim.SESSION_TYPE.C2C;
 const GROUP = webim.SESSION_TYPE.GROUP;
@@ -63,6 +64,7 @@ function formatMsg(msg, msgContent) {
     seq: msg.getSeq(),
     isSend: msg.getIsSend(),
     subType: msg.getSubType(),
+    sessType: msg.getSession().type(),
     msgContent: msgContent,
     sess: sess
   };
@@ -1241,11 +1243,71 @@ function getLastC2CHistoryMsgs(reqMsgCount, cbOk, cbError) {
   );
 }
 
+function getGroupInfo(groupId, cbOk, cbError) {
+  webim.getGroupInfo({ GroupIdList: [groupId] }, cbOk, cbError);
+}
+
+//获取最新的群历史消息,用于切换群组聊天时，重新拉取群组的聊天消息
+function getLastGroupHistoryMsgs(reqMsgCount, cbOk, cbError) {
+  if (selType == webim.SESSION_TYPE.C2C) {
+    console.error('当前的聊天类型为好友聊天，不能进行拉取群历史消息操作');
+    return;
+  }
+  getGroupInfo(
+    selToID,
+    function(resp) {
+      //拉取最新的群历史消息
+      const cacheInfo = getPrePageGroupHistroyMsgInfoMap[selToID] || {};
+      const options = {
+        GroupId: selToID,
+        ReqMsgSeq: cacheInfo.ReqMsgSeq || resp.GroupInfo[0].NextMsgSeq - 1,
+        ReqMsgNumber: reqMsgCount || 15
+      };
+      if (
+        options.ReqMsgSeq == null ||
+        options.ReqMsgSeq == undefined ||
+        options.ReqMsgSeq <= 0
+      ) {
+        webim.Log.warn('该群还没有历史消息:options=' + JSON.stringify(options));
+        return;
+      }
+      webim.syncGroupMsgs(
+        options,
+        function(msgList) {
+          let complete = 0;
+          if (msgList.length == 0) {
+            webim.Log.error(
+              '该群没有历史消息了:options=' + JSON.stringify(options)
+            );
+            complete = 1;
+          } else {
+            getPrePageGroupHistroyMsgInfoMap[selToID] = {
+              ReqMsgSeq: msgList[msgList.length - 1].seq - 1
+            };
+          }
+
+          cbOk &&
+            cbOk({
+              Complete: complete, //是否还有历史消息可以拉取，1-表示没有，0-表示有
+              msgList: msgList.map(item => formatMsg(item))
+            });
+        },
+        function(err) {
+          console.error(err.ErrorInfo);
+          cbError(err);
+        }
+      );
+    },
+    cbError
+  );
+}
+
 module.exports = {
   init: init,
   setLog: setLog,
   isLogin: () => loginInfo && loginInfo.identifier,
   getLastC2CHistoryMsgs: getLastC2CHistoryMsgs,
+  getLastGroupHistoryMsgs: getLastGroupHistoryMsgs,
   formatMsg: formatMsg,
   onBigGroupMsgNotify: onBigGroupMsgNotify,
   onMsgNotify: onMsgNotify,

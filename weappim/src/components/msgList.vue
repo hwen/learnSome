@@ -3,6 +3,8 @@
   <scroll-view
     class="msg-list-scroller"
     scroll-y
+    scroll-with-animation
+    :scroll-into-view='toItem'
     @scrolltoupper="loadMore"
   >
     <msg-item
@@ -34,9 +36,14 @@ export default {
     hasMore: {
       type: Boolean,
       default: false
+    },
+    toItem: {
+      type: String
     }
   },
+  created() {},
   computed: {},
+
   methods: {
     loadMore() {
       ilog('滚动到顶部了。。。。');
@@ -51,7 +58,7 @@ export default {
 
 <style lang='scss'>
 .msg-list {
-  padding: 16rpx;
+  width: 100%;
 }
 .msg-list-scroller {
   height: 600rpx;

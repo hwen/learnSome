@@ -1,7 +1,14 @@
 <template>
-  <div :class="['chat-message', isSelf ? 'self' : '']">
+<div class="msg-box">
+  <div 
+    :class="['chat-message', isSelf ? 'self' : '']"
+    :id='data.sessType + data.seq'
+    v-if="!data.msgContent || (data.msgContent.type !== 'groupTip')"
+  >
     <img class="avatar" :src="isSelf ? 'https://cdn.suisuijiang.com/fiora/avatar/2.jpg' : 'https://cdn.suisuijiang.com/fiora/./avatar/10.jpg'" alt="sdf">
-    <div class="right">
+    <div
+      class="right"
+    >
       <div class="nickname-time">
         <!-- <span class="tag"></span> -->
         <span class="nickname">{{data.fromAccountNick}}</span>
@@ -13,6 +20,10 @@
       <div class="arrow"></div>
     </div>
   </div>
+  <div v-if="data.msgContent.type === 'groupTip'" class="group-tip">
+    <p>{{data.msgContent.content}}</p>
+  </div>
+</div>
 </template>
 
 <script>
@@ -28,6 +39,7 @@ export default {
       type: Boolean
     }
   },
+  created() {},
   computed: {
     text: function() {
       return JSON.stringify(this.data.msgContent);
@@ -47,6 +59,16 @@ $purple: #8b80f9;
 $orange: #ed9153;
 $yellow: #fbd157;
 $font-color: #606c76;
+.group-tip {
+  font-size: 20rpx;
+  background: #dcdcdc;
+  color: $font-color;
+  padding: 8rpx 16rpx;
+  border-radius: 32rpx;
+  width: 50%;
+  margin: 24rpx auto;
+  text-align: center;
+}
 .chat-message {
   display: flex;
   margin-right: 54px;
