@@ -32,6 +32,7 @@ module.exports = {
     App: true,
     Page: true,
     wx: true,
+    ilog: true,
     getApp: true,
     getPage: true,
     requirePlugin: true

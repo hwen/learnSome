@@ -11,7 +11,8 @@
     "lint": "eslint --ext .js,.vue src"
   },
   "dependencies": {
-    "mpvue": "^1.0.11"
+    "mpvue": "^1.0.11",
+    "sme-log": "^0.12.4"
   },
   "devDependencies": {
     "babel-core": "^6.22.1",

@@ -5,7 +5,7 @@
       <div class="nickname-time">
         <!-- <span class="tag"></span> -->
         <span class="nickname">{{data.fromAccountNick}}</span>
-        <span class="time">{{data.time}}</span>
+        <span class="time">{{formatedTime}}</span>
       </div>
       <div class="content">
         <div class="text">{{text}}</div>
@@ -31,6 +31,9 @@ export default {
   computed: {
     text: function() {
       return JSON.stringify(this.data.msgContent);
+    },
+    formatedTime: function() {
+      return formatTime(new Date(this.data.time * 1000));
     }
   },
   methods: {

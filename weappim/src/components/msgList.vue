@@ -1,11 +1,17 @@
 <template>
 <div class="msg-list">
-  <msg-item
-    :key='item.time'
-    v-for='item in list'
-    :data='item'
-    :is-self='item.fromAccount == selfId'>
-  </msg-item>
+  <scroll-view
+    class="msg-list-scroller"
+    scroll-y
+    @scrolltoupper="loadMore"
+  >
+    <msg-item
+      :key='item.time'
+      v-for='item in list'
+      :data='item'
+      :is-self='item.fromAccount == selfId'>
+    </msg-item>
+  </scroll-view>
 </div>
 </template>
 
@@ -24,11 +30,31 @@ export default {
     },
     selfId: {
       type: String
+    },
+    hasMore: {
+      type: Boolean,
+      default: false
     }
   },
-  computed: {}
+  computed: {},
+  methods: {
+    loadMore() {
+      ilog('滚动到顶部了。。。。');
+      if (this.hasMore) {
+        ilog('加载更多历史信息。。。');
+        this.$emit('loadMore');
+      }
+    }
+  }
 };
 </script>
 
 <style lang='scss'>
+.msg-list {
+  padding: 16rpx;
+}
+.msg-list-scroller {
+  height: 600rpx;
+  margin: 60rpx 0;
+}
 </style>

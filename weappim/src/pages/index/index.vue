@@ -1,28 +1,26 @@
 <template>
-  <div class="container" @click="clickHandle('test click', $event)">
-
-    <div class="userinfo" @click="bindViewTap">
-      <img class="userinfo-avatar" v-if="userInfo.avatarUrl" :src="userInfo.avatarUrl" background-size="cover" />
-      <div class="userinfo-nickname">
-        <card :text="userInfo.nickName"></card>
-      </div>
-    </div>
-
+  <div class="container">
     <msg-list
-      :list='msgList'
-      :self-id='cfg.Identifier'
+      :list="msgList"
+      :self-id="cfg.Identifier"
+      :has-more="hasMore"
+      @loadMore="loadHistory"
     >
     </msg-list>
+    <chat-input
+      :im="im"
+      @sendMsg="onSendMsg"
+    ></chat-input>
   </div>
 </template>
 
 <script>
-import card from '@/components/card';
 import IM from '@/utils/im';
 import { omit } from '@/utils/index';
 import { config } from '@/config/index';
 
 import MsgList from '@/components/msgList';
+import ChatInput from '@/components/chatInput';
 
 const cfg = {
   accountMode: config.accountMode,
@@ -33,46 +31,10 @@ const cfg = {
   Identifier: config.user2.id
 };
 
-function formatMsgList(msgList) {
-  return (
-    msgList &&
-    msgList.map(item => {
-      return {
-        ...omit(item, 'sess'),
-        sess: {
-          ...omit(item.sess && item.sess._impl, 'msgs')
-        }
-      };
-    })
-  );
-}
-
-function logSome(env, style) {
-  env = env || 'dev';
-  var logCount = 0;
-  return function(info, force) {
-    var type = {}.toString.call(info).slice(8, -1);
-    var logStyle = style || 'color: #8b80f9;font-weight:bold;';
-
-    if (force || env === 'development' || env === 'dev') {
-      logCount++;
-      if (type !== 'Object') {
-        console.log('%c' + info, logStyle);
-      } else {
-        console.log('%c====== log ' + logCount + ' ======', logStyle);
-        console.log(info);
-      }
-      return new Date() + ' => log:' + logCount;
-    }
-  };
-}
-
-const ilog = logSome('dev');
-
 export default {
   components: {
     MsgList,
-    card
+    ChatInput
   },
   data() {
     return {
@@ -81,7 +43,8 @@ export default {
       cfg: cfg,
       connMsg: '',
       msgList: [],
-      im: null
+      im: null,
+      hasMore: false
     };
   },
 
@@ -136,13 +99,14 @@ export default {
       console.log(msgList);
       this.msgList = this.msgList.concat(msgList || []);
     },
-    onLogin() {
+    loadHistory() {
       this.im.loadMsgHistory(
-        15,
+        5,
         resp => {
           ilog('加载历史消息成功~');
           console.log(resp);
-          this.msgList = this.msgList.concat(resp.msgList || []);
+          this.hasMore = resp.Complete === 0;
+          this.msgList = (resp.msgList || []).concat(this.msgList);
         },
         err => {
           ilog('错误~');
@@ -150,44 +114,15 @@ export default {
         }
       );
     },
-    sendMsg(msg) {
-      const { im } = this;
-      if (!im) return;
-      im.sendMsg(msg, resp => {
-        ilog('发送消息成功');
-        ilog(resp);
-      });
+    onLogin() {
+      this.loadHistory();
+    },
+    onSendMsg(msg) {
+      this.msgList.push(msg);
     }
   }
 };
 </script>
 
-<style scoped>
-.userinfo {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.userinfo-avatar {
-  width: 128rpx;
-  height: 128rpx;
-  margin: 20rpx;
-  border-radius: 50%;
-}
-
-.userinfo-nickname {
-  color: #aaa;
-}
-
-.usermotto {
-  margin-top: 150px;
-}
-
-.form-control {
-  display: block;
-  padding: 0 12px;
-  margin-bottom: 5px;
-  border: 1px solid #ccc;
-}
+<style scoped lang='scss'>
 </style>

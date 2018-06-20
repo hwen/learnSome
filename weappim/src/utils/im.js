@@ -13,6 +13,10 @@ export default class IM {
     this.init(config);
   }
 
+  islogin() {
+    return webimhandler.isLogin();
+  }
+
   initChat(selToID, selType = C2C, selSess = null) {
     const avChatRoomId = selType === GROUP ? selToID : null;
     Object.assign(this.config, {

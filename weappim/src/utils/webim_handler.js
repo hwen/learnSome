@@ -654,6 +654,8 @@ function smsPicClick() {
 //发送消息(普通消息)
 function onSendMsg(msg, callback) {
   console.log('accountMode', accountMode);
+  console.log('ready to send: ' + msg);
+  console.log(msg);
   if (!loginInfo.identifier) {
     //未登录
     if (accountMode == 1) {
@@ -764,8 +766,6 @@ function onSendMsg(msg, callback) {
       msg.addText(text_obj);
     }
   }
-  console.log('准备调用发消息接口....');
-  console.log(msg);
   webim.sendMsg(
     msg,
     function(resp) {
@@ -775,7 +775,7 @@ function onSendMsg(msg, callback) {
         content = showMsg(msg);
       }
       webim.Log.info('发消息成功....');
-      callback && callback(content);
+      callback && callback(formatMsg(msg));
 
       //hideDiscussForm();//隐藏评论表单
       //showDiscussTool();//显示评论工具栏
@@ -1244,6 +1244,7 @@ function getLastC2CHistoryMsgs(reqMsgCount, cbOk, cbError) {
 module.exports = {
   init: init,
   setLog: setLog,
+  isLogin: () => loginInfo && loginInfo.identifier,
   getLastC2CHistoryMsgs: getLastC2CHistoryMsgs,
   formatMsg: formatMsg,
   onBigGroupMsgNotify: onBigGroupMsgNotify,
