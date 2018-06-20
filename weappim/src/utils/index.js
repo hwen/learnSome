@@ -39,6 +39,16 @@ export function getProp(obj, path) {
   return tempObj;
 }
 
+export function omit(obj, paths) {
+  let temp = {};
+  for (let key in obj) {
+    if (paths.indexOf(key) === -1) {
+      temp[key] = obj[key];
+    }
+  }
+  return temp;
+}
+
 export default {
   formatNumber,
   formatTime

@@ -10,6 +10,11 @@ var selToID,
   selToID,
   selSess,
   selSessHeadUrl;
+
+var getPrePageC2CHistroyMsgInfoMap = {};
+// 会话类型
+const C2C = webim.SESSION_TYPE.C2C;
+const GROUP = webim.SESSION_TYPE.GROUP;
 //监听大群新消息（普通，点赞，提示，红包）
 function onBigGroupMsgNotify(msgList, callback) {
   for (var i = msgList.length - 1; i >= 0; i--) {
@@ -37,9 +42,35 @@ function onMsgNotify(newMsgList, cb) {
   cb(newMsgList.map(item => handlderMsg(item)));
 }
 
+function formatMsg(msg, msgContent) {
+  let sess = null;
+  msgContent = msgContent ? msgContent : convertMsgtoHtml(msg);
+  if (msg.sess) {
+    sess = {
+      id: msg.sess.id(),
+      name: msg.sess.name(),
+      icon: msg.sess.icon(),
+      isFinished: msg.sess.isFinished(),
+      time: msg.sess.time(),
+      curMaxMsgSeq: msg.sess.curMaxMsgSeq(),
+      msgCount: msg.sess.msgCount()
+    };
+  }
+  return {
+    fromAccount: msg.getFromAccount(),
+    fromAccountNick: msg.getFromAccountNick(),
+    time: msg.getTime(),
+    seq: msg.getSeq(),
+    isSend: msg.getIsSend(),
+    subType: msg.getSubType(),
+    msgContent: msgContent,
+    sess: sess
+  };
+}
+
 //处理消息（私聊(包括普通消息和全员推送消息)，普通群(非直播聊天室)消息）
 function handlderMsg(msg) {
-  var fromAccount, fromAccountNick, sessType, subType, contentHtml;
+  let fromAccount, fromAccountNick, sessType, subType, contentHtml;
 
   fromAccount = msg.getFromAccount();
   if (!fromAccount) {
@@ -59,13 +90,10 @@ function handlderMsg(msg) {
   //会话类型为群聊时，子类型为：webim.GROUP_MSG_SUB_TYPE
   //会话类型为私聊时，子类型为：webim.C2C_MSG_SUB_TYPE
   subType = msg.getSubType();
+  let msgContent = null;
 
-  console.log(
-    'shoou dao',
-    loginInfo.identifier,
-    '收到消息：',
-    convertMsgtoHtml(msg)
-  );
+  console.log('收到消息，并进行处理 handleMsg：');
+  console.log(msg);
   console.log('sessType', sessType);
   switch (sessType) {
     case webim.SESSION_TYPE.C2C: //私聊消息
@@ -73,12 +101,13 @@ function handlderMsg(msg) {
         case webim.C2C_MSG_SUB_TYPE.COMMON: //c2c普通消息
           //业务可以根据发送者帐号fromAccount是否为app管理员帐号，来判断c2c消息是否为全员推送消息，还是普通好友消息
           //或者业务在发送全员推送消息时，发送自定义类型(webim.MSG_ELEMENT_TYPE.CUSTOM,即TIMCustomElem)的消息，在里面增加一个字段来标识消息是否为推送消息
-          contentHtml = convertMsgtoHtml(msg);
+          // => 适配小程序，返回对象原始数据给上层进行 ui 封装
+          msgContent = convertMsgtoHtml(msg);
           webim.Log.warn(
             'receive a new c2c msg: fromAccountNick=' +
               fromAccountNick +
               ', content=' +
-              contentHtml
+              msgContent
           );
           //c2c消息一定要调用已读上报接口
           var opts = {
@@ -90,20 +119,22 @@ function handlderMsg(msg) {
             '收到一条c2c消息(好友消息或者全员推送消息): 发送人=' +
               fromAccountNick +
               ', 内容=' +
-              contentHtml
+              JSON.stringify(msgContent)
           );
 
-          return {
-            fromAccount: fromAccount,
-            fromAccountNick: fromAccountNick,
-            time: opts.LastedMsgTime,
-            content: contentHtml
-          };
+          return formatMsg(msg, msgContent);
           break;
       }
       break;
-    case webim.SESSION_TYPE.GROUP: //普通群消息，对于直播聊天室场景，不需要作处理
-      // TODO: 待实现群聊功能
+    case webim.SESSION_TYPE.GROUP: //普通群消息
+      msgContent = convertMsgtoHtml(msg);
+      console.log(
+        '收到一条group消息：发送人=' +
+          fromAccountNick +
+          '，内容=' +
+          JSON.stringify(msgContent)
+      );
+      return formatMsg(msg, msgContent);
       break;
   }
 }
@@ -248,10 +279,12 @@ function convertMsgtoHtml(msg) {
         html += convertFaceMsgToHtml(content);
         break;
       case webim.MSG_ELEMENT_TYPE.IMAGE:
-        html += convertImageMsgToHtml(content);
+        // 直接返回数据给上层
+        return convertImageMsgToHtml(content);
         break;
       case webim.MSG_ELEMENT_TYPE.SOUND:
-        html += convertSoundMsgToHtml(content);
+        // 直接返回数据给上层
+        return convertSoundMsgToHtml(content);
         break;
       case webim.MSG_ELEMENT_TYPE.FILE:
         html += convertFileMsgToHtml(content);
@@ -263,7 +296,8 @@ function convertMsgtoHtml(msg) {
         html += convertCustomMsgToHtml(content);
         break;
       case webim.MSG_ELEMENT_TYPE.GROUP_TIP:
-        html += convertGroupTipMsgToHtml(content);
+        // 直接返回数据给上层
+        return convertGroupTipMsgToHtml(content);
         break;
       default:
         webim.Log.error('未知消息元素类型: elemType=' + type);
@@ -306,19 +340,25 @@ function convertImageMsgToHtml(content) {
   if (!oriImage) {
     oriImage = smallImage;
   }
-  return (
-    "<img src='" +
-    smallImage.getUrl() +
-    '#' +
-    bigImage.getUrl() +
-    '#' +
-    oriImage.getUrl() +
-    "' style='CURSOR: hand' id='" +
-    content.getImageId() +
-    "' bigImgUrl='" +
-    bigImage.getUrl() +
-    "' onclick='imageClick(this)' />"
-  );
+  // return (
+  //   "<img src='" +
+  //   smallImage.getUrl() +
+  //   '#' +
+  //   bigImage.getUrl() +
+  //   '#' +
+  //   oriImage.getUrl() +
+  //   "' style='CURSOR: hand' id='" +
+  //   content.getImageId() +
+  //   "' bigImgUrl='" +
+  //   bigImage.getUrl() +
+  //   "' onclick='imageClick(this)' />"
+  // );
+  return {
+    smallImg: smallImage.getUrl(),
+    bigImg: bigImage.getUrl(),
+    oriImg: oriImage.getUrl(),
+    type: 'image'
+  };
 }
 //解析语音消息元素
 function convertSoundMsgToHtml(content) {
@@ -333,11 +373,16 @@ function convertSoundMsgToHtml(content) {
       downUrl
     );
   }
-  return (
-    '<audio src="' +
-    downUrl +
-    '" controls="controls" onplay="onChangePlayAudio(this)" preload="none"></audio>'
-  );
+  // return (
+  //   '<audio src="' +
+  //   downUrl +
+  //   '" controls="controls" onplay="onChangePlayAudio(this)" preload="none"></audio>'
+  // );
+  return {
+    downUrl: downUrl,
+    second: second,
+    type: 'audio'
+  };
 }
 //解析文件消息元素
 function convertFileMsgToHtml(content) {
@@ -394,14 +439,14 @@ function convertGroupTipMsgToHtml(content) {
         }
       }
       text = text.substring(0, text.length - 1);
-      text += '进入房间';
-      //房间成员数加1
+      text += '进入群聊';
+      //群聊成员数加1
       // memberCount = $('#user-icon-fans').html();
       memberCount = parseInt(memberCount) + 1;
       break;
     case webim.GROUP_TIP_TYPE.QUIT: //退出群
-      text += opUserId + '离开房间';
-      //房间成员数减1
+      text += opUserId + '离开群聊';
+      //群聊成员数减1
       if (memberCount > 0) {
         memberCount = parseInt(memberCount) - 1;
       }
@@ -512,7 +557,10 @@ function convertGroupTipMsgToHtml(content) {
       text += '未知群提示消息类型：type=' + opType;
       break;
   }
-  return text;
+  return {
+    type: 'groupTip',
+    content: text
+  };
 }
 
 //tls登录
@@ -622,7 +670,7 @@ function onSendMsg(msg, callback) {
   }
 
   if (!selToID) {
-    console.error('您还没有进入房间，暂不能聊天');
+    console.error('您还没有进入群聊，暂不能聊天');
     return;
   }
   //获取消息内容
@@ -759,7 +807,7 @@ function sendGroupLoveMsg() {
   }
 
   if (!selToID) {
-    console.error('您还没有进入房间，暂不能点赞');
+    console.error('您还没有进入群聊，暂不能点赞');
     return;
   }
 
@@ -1148,9 +1196,56 @@ function setLog(on) {
   webim.Log.setOn(on);
 }
 
+//获取最新的 C2C 历史消息,用于切换好友聊天，重新拉取好友的聊天消息
+function getLastC2CHistoryMsgs(reqMsgCount, cbOk, cbError) {
+  console.log('获取前');
+  console.log(selType, selToID);
+  if (selType === GROUP) {
+    console.error('当前的聊天类型为群聊天，不能进行拉取好友历史消息操作');
+    return;
+  }
+  const cacheInfo = getPrePageC2CHistroyMsgInfoMap[selToID] || {};
+  const lastMsgTime = cacheInfo.LastMsgTime || 0; //第一次拉取好友历史消息时，必须传 0
+  const msgKey = cacheInfo.MsgKey || '';
+  const options = {
+    Peer_Account: selToID, //好友帐号
+    MaxCnt: reqMsgCount || 15, //拉取消息条数
+    LastMsgTime: lastMsgTime, //最近的消息时间，即从这个时间点向前拉取历史消息
+    MsgKey: msgKey
+  };
+  webim.getC2CHistoryMsgs(
+    options,
+    resp => {
+      const complete = resp.Complete; //是否还有历史消息可以拉取，1-表示没有，0-表示有
+      const retMsgCount = resp.MsgCount; //返回的消息条数，小于或等于请求的消息条数，小于的时候，说明没有历史消息可拉取了
+      if (!resp.MsgList || resp.MsgList.length === 0) {
+        webim.Log.error('没有历史消息了:data=' + JSON.stringify(options));
+        cbOk && cbOk(resp);
+        return;
+      }
+      getPrePageC2CHistroyMsgInfoMap[selToID] = {
+        //保留服务器返回的最近消息时间和消息Key,用于下次向前拉取历史消息
+        LastMsgTime: resp.LastMsgTime,
+        MsgKey: resp.MsgKey
+      };
+      cbOk &&
+        cbOk({
+          Complete: complete,
+          MsgCount: retMsgCount,
+          LastMsgTime: resp.LastMsgTime,
+          MsgKey: resp.MsgKey,
+          msgList: resp.MsgList.map(item => formatMsg(item))
+        });
+    },
+    cbError
+  );
+}
+
 module.exports = {
   init: init,
   setLog: setLog,
+  getLastC2CHistoryMsgs: getLastC2CHistoryMsgs,
+  formatMsg: formatMsg,
   onBigGroupMsgNotify: onBigGroupMsgNotify,
   onMsgNotify: onMsgNotify,
   handlderMsg: handlderMsg,

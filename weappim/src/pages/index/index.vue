@@ -19,6 +19,7 @@
 <script>
 import card from '@/components/card';
 import IM from '@/utils/im';
+import { omit } from '@/utils/index';
 import { config } from '@/config/index';
 
 import MsgList from '@/components/msgList';
@@ -36,9 +37,12 @@ function formatMsgList(msgList) {
   return (
     msgList &&
     msgList.map(item => {
-      // 防止自引用
-      delete item.sess._impl.msgs;
-      return item;
+      return {
+        ...omit(item, 'sess'),
+        sess: {
+          ...omit(item.sess && item.sess._impl, 'msgs')
+        }
+      };
     })
   );
 }
@@ -138,7 +142,7 @@ export default {
         resp => {
           ilog('加载历史消息成功~');
           console.log(resp);
-          this.msgList = this.msgList.concat(formatMsgList(resp.MsgList) || []);
+          this.msgList = this.msgList.concat(resp.msgList || []);
         },
         err => {
           ilog('错误~');

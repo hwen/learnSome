@@ -30,7 +30,7 @@ export default {
   },
   computed: {
     text: function() {
-      return this.data.elems[0].content.text;
+      return JSON.stringify(this.data.msgContent);
     }
   },
   methods: {
@@ -68,8 +68,8 @@ $font-color: #606c76;
     padding: 0 6px;
     display: inline-block;
     font-size: 10px;
-    background-color: var($purple);
-    color: var($font-color);
+    background-color: $purple;
+    color: $font-color;
     transform: translateY(-1px);
   }
   .nickname {
@@ -87,7 +87,7 @@ $font-color: #606c76;
     display: inline-block;
     color: #555;
     font-size: 14px;
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: $orange;
     padding: 6px 8px;
     border-radius: 8px;
     border-top-left-radius: 0px;
@@ -99,9 +99,9 @@ $font-color: #606c76;
     height: 0;
     border-style: solid;
     border-width: 0px 7px 15px 0;
-    border-color: transparent rgba(255, 255, 255, 0.8) transparent transparent;
+    border-color: transparent $orange transparent transparent;
     position: absolute;
-    top: 21px;
+    top: 28px;
     left: 49px;
   }
   &.self {
@@ -128,19 +128,19 @@ $font-color: #606c76;
     }
     .content {
       color: rgba(255, 255, 255, 0.9);
-      background-color: var(--primary-color-10);
+      background-color: $purple;
       border-top-left-radius: 8px;
       border-top-right-radius: 0px;
     }
     .arrow {
       border-width: 0 0 15px 7px;
-      border-color: transparent transparent transparent var(--primary-color-10);
+      border-color: transparent transparent transparent $purple;
       left: initial;
       right: 49px;
-      top: 17px;
+      top: 20px;
     }
     .text {
-      color: var($font-color);
+      color: $font-color;
     }
   }
   .text {
@@ -163,7 +163,7 @@ $font-color: #606c76;
       height: 80px;
     }
     .progress-number {
-      color: var($font-color);
+      color: $font-color;
       text-align: center;
       line-height: 80px;
       font-size: 18px;
@@ -182,12 +182,6 @@ $font-color: #606c76;
       }
       .progress-number {
         display: block;
-      }
-    }
-    &.huaji {
-      .img {
-        width: auto;
-        max-height: 150px;
       }
     }
   }
