@@ -152,4 +152,9 @@ export default {
 </script>
 
 <style scoped lang='scss'>
+$font-color: #606c76;
+.container {
+  color: $font-color;
+  font-size: 32rpx;
+}
 </style>

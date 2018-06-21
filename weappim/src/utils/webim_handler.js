@@ -189,7 +189,7 @@ function setProfilePortrait(options, callback) {
   );
 }
 
-//进入大群
+//加入大群
 function applyJoinBigGroup(groupId) {
   var options = {
     GroupId: groupId //群id
@@ -441,7 +441,7 @@ function convertGroupTipMsgToHtml(content) {
         }
       }
       text = text.substring(0, text.length - 1);
-      text += '进入群聊';
+      text += '加入群聊';
       //群聊成员数加1
       // memberCount = $('#user-icon-fans').html();
       memberCount = parseInt(memberCount) + 1;
@@ -674,7 +674,7 @@ function onSendMsg(msg, callback) {
   }
 
   if (!selToID) {
-    console.error('您还没有进入群聊，暂不能聊天');
+    console.error('您还没有加入群聊，暂不能聊天');
     return;
   }
   //获取消息内容
@@ -809,7 +809,7 @@ function sendGroupLoveMsg() {
   }
 
   if (!selToID) {
-    console.error('您还没有进入群聊，暂不能点赞');
+    console.error('您还没有加入群聊，暂不能点赞');
     return;
   }
 
@@ -950,7 +950,7 @@ function quitBigGroup() {
     function(resp) {
       webim.Log.info('退群成功');
       selSess = null;
-      //webim.Log.error('进入另一个大群:'+avChatRoomId2);
+      //webim.Log.error('加入另一个大群:'+avChatRoomId2);
       //applyJoinBigGroup(avChatRoomId2);//加入大群
     },
     function(err) {

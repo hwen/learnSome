@@ -1,11 +1,15 @@
 <template>
 <div class="chat-input">
   <input
+    class="input-field"
     type="text"
     v-model="inputValue"
     placeholder="请输入内容"
     @confirm="sendMsg"
   >
+  <div class="more-btn">
+    更多
+  </div>
 </div>
 </template>
 
@@ -40,13 +44,24 @@ export default {
 </script>
 <style lang='scss'>
 .chat-input {
-  height: 48rpx;
+  height: 92rpx;
   width: 100%;
   position: fixed;
   bottom: 0;
-  background: #dcdcdc;
-  input {
-    width: 100%;
+  border-top: 1px solid #dcdcdc;
+  .input-field {
+    width: 75%;
+    margin: 16rpx 40rpx 16rpx 40rpx;
+    border: 1px solid #dcdcdc;
+  }
+  .more-btn {
+    position: absolute;
+    right: 32rpx;
+    top: 16rpx;
+    padding: 8rpx 12rpx;
+    border-radius: 16rpx;
+    font-size: 28rpx;
+    border: 1px solid #dcdcdc;
   }
 }
 </style>
