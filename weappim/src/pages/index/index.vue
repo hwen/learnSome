@@ -2,7 +2,7 @@
   <div class="container">
     <msg-list
       :list="msgList"
-      :self-id="cfg.identifier"
+      :self-id="imConfig.identifier"
       :has-more="hasMore"
       :to-item="toItem"
       @loadMore="loadHistory"
@@ -23,13 +23,15 @@ import { config } from '@/config/index';
 import MsgList from '@/components/msgList';
 import ChatInput from '@/components/chatInput';
 
-const cfg = {
+const imConfig = {
   accountMode: config.accountMode,
   accountType: config.accountType,
   sdkappid: config.sdkappid,
   group: config.group,
   userSig: config.user2.sig,
-  identifier: config.user2.id
+  identifier: config.user2.id,
+  selType: 'C2C',
+  selToID: 'testxx'
 };
 
 export default {
@@ -41,7 +43,7 @@ export default {
     return {
       motto: 'Hello World--',
       userInfo: {},
-      cfg: cfg,
+      imConfig: imConfig,
       connMsg: '',
       // 有新消息时，滚动到新消息处
       toItem: '',
@@ -54,16 +56,14 @@ export default {
   created() {
     // 调用应用实例的方法获取全局数据
     this.getUserInfo(userInfo => {
-      const imConfig = Object.assign(
+      this.imConfig = Object.assign(
         {
-          ...userInfo,
-          selType: 'GROUP',
-          selToID: config.group
+          ...userInfo
         },
-        cfg
+        this.imConfig
       );
-      ilog(`type: ${imConfig.selType}, selToID: ${imConfig.selToID}`);
-      this.im = new IM(imConfig, {
+      ilog(`type: ${this.imConfig.selType}, selToID: ${this.imConfig.selToID}`);
+      this.im = new IM(this.imConfig, {
         onConnNotify: this.onConnNotify.bind(this),
         onMsgNotify: this.onMsgNotify.bind(this),
         onLogin: this.onLogin.bind(this)
@@ -86,16 +86,16 @@ export default {
       });
     },
     initIM(userInfo, selType, selToID) {
-      const imConfig = Object.assign(
+      this.imConfig = Object.assign(
         {
           ...userInfo,
           selType: selType,
           selToID: selToID
         },
-        cfg
+        this.imConfig
       );
-      ilog(`type: ${imConfig.selType}, selToID: ${imConfig.selToID}`);
-      this.im = new IM(imConfig, {
+      ilog(`type: ${this.imConfig.selType}, selToID: ${this.imConfig.selToID}`);
+      this.im = new IM(this.imConfig, {
         onConnNotify: this.onConnNotify.bind(this),
         onMsgNotify: this.onMsgNotify.bind(this),
         onLogin: this.onLogin.bind(this)
@@ -143,8 +143,9 @@ export default {
       this.loadHistory();
     },
     onSendMsg(msg) {
-      if (config.selType === 'C2C') {
+      if (this.imConfig.selType === 'C2C') {
         this.msgList.push(msg);
+        this.scrollToLastMsg();
       }
     }
   }

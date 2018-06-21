@@ -89,9 +89,10 @@ export default class IM {
             onMsgNotify(
               msgList &&
                 msgList.filter(m => {
-                  const { selType, selToID, identifier } = this.config;
+                  // 筛选出会话中的消息
+                  const { selType, selToID } = this.config;
                   /* eslint-disable */
-                  return m.sessType == selType;
+                  return m.sessType == selType && m.sess.id == selToID;
                   /* eslint-enable */
                 })
             );
