@@ -44,11 +44,13 @@ export default {
 </script>
 <style lang='scss'>
 .chat-input {
-  height: 92rpx;
+  height: 100rpx;
   width: 100%;
   position: fixed;
   bottom: 0;
   border-top: 1px solid #dcdcdc;
+  z-index: 100;
+  background: white;
   .input-field {
     width: 75%;
     margin: 16rpx 40rpx 16rpx 40rpx;

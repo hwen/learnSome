@@ -6,6 +6,7 @@
     scroll-with-animation
     :scroll-into-view='toItem'
     @scrolltoupper="loadMore"
+    :style="{height: scrollHeight+'rpx', top: top+'rpx', bottom: bottom+'rpx' }"
   >
     <msg-item
       :key='item.time'
@@ -41,8 +42,24 @@ export default {
       type: String
     }
   },
-  created() {},
-  computed: {},
+  data() {
+    return {
+      windowHeight: 0,
+      // rpx
+      bottom: 100,
+      top: 0
+    };
+  },
+  created() {
+    const sysInfo = wx.getSystemInfoSync();
+    this.ratio = 750 / sysInfo.screenWidth;
+    this.windowHeight = this.ratio * sysInfo.windowHeight;
+  },
+  computed: {
+    scrollHeight: function() {
+      return this.windowHeight - this.bottom - this.top;
+    }
+  },
 
   methods: {
     loadMore() {
@@ -59,9 +76,10 @@ export default {
 <style lang='scss'>
 .msg-list {
   width: 100%;
+  height: 100%;
 }
 .msg-list-scroller {
-  height: 600rpx;
-  margin: 60rpx 0;
+  position: absolute;
+  background: #f5f5f5;
 }
 </style>

@@ -58,6 +58,7 @@ export default {
 $purple: #8b80f9;
 $orange: #ed9153;
 $yellow: #fbd157;
+$chat: $yellow;
 $font-color: #606c76;
 .group-tip {
   font-size: 20rpx;
@@ -71,72 +72,73 @@ $font-color: #606c76;
 }
 .chat-message {
   display: flex;
-  margin-right: 54px;
-  margin-bottom: 10px;
+  margin-right: 108rpx;
+  margin-left: 20rpx;
+  margin-bottom: 20rpx;
   position: relative;
 
   .avatar {
-    min-width: 44px;
-    width: 44px;
-    height: 44px;
-    border-radius: 22px;
+    min-width: 88rpx;
+    width: 88rpx;
+    height: 88rpx;
+    border-radius: 44rpx;
   }
   .right {
-    margin-left: 12px;
+    margin-left: 24rpx;
   }
   .nickname-time {
   }
   .tag {
-    height: 18px;
-    line-height: 18px;
-    border-radius: 8px;
-    padding: 0 6px;
+    height: 36rpx;
+    line-height: 36rpx;
+    border-radius: 16rpx;
+    padding: 0 12rpx;
     display: inline-block;
-    font-size: 10px;
-    background-color: $purple;
+    font-size: 20rpx;
+    background-color: white;
     color: $font-color;
     transform: translateY(-1px);
   }
   .nickname {
-    color: #333;
-    font-size: 13px;
-    margin-left: 6px;
+    color: $font-color;
+    font-size: 26rpx;
+    margin-left: 12rpx;
     user-select: text;
   }
   .time {
     color: #666;
-    font-size: 12px;
-    margin-left: 8px;
+    font-size: 24rpx;
+    margin-left: 16rpx;
   }
   .content {
     display: inline-block;
-    color: #555;
-    font-size: 14px;
-    background-color: $orange;
-    padding: 6px 8px;
-    border-radius: 8px;
-    border-top-left-radius: 0px;
-    min-height: 28px;
-    margin-top: 3px;
+    color: $font-color;
+    font-size: 28rpx;
+    background-color: $chat;
+    padding: 12rpx 16rpx;
+    border-radius: 16rpx;
+    border-top-left-radius: 0;
+    min-height: 56rpx;
+    margin-top: 6rpx;
   }
   .arrow {
     width: 0;
     height: 0;
     border-style: solid;
-    border-width: 0px 7px 15px 0;
-    border-color: transparent $orange transparent transparent;
+    border-width: 0 14rpx 30rpx 0;
+    border-color: transparent $chat transparent transparent;
     position: absolute;
-    top: 28px;
-    left: 49px;
+    top: 46rpx;
+    left: 100rpx;
   }
   &.self {
     flex-direction: row-reverse;
-    margin-right: 0px;
-    margin-left: 54px;
+    margin-right: 20rpx;
+    margin-left: 108rpx;
 
     .right {
-      margin-left: 0px;
-      margin-right: 12px;
+      margin-left: 0;
+      margin-right: 24rpx;
       display: flex;
       flex-direction: column;
       align-items: flex-end;
@@ -149,20 +151,20 @@ $font-color: #606c76;
       display: none;
     }
     .time {
-      transform: translateY(2px);
+      transform: translateY(4rpx);
     }
     .content {
       color: rgba(255, 255, 255, 0.9);
-      background-color: $purple;
-      border-top-left-radius: 8px;
+      background-color: $chat;
+      border-top-left-radius: 16rpx;
       border-top-right-radius: 0px;
     }
     .arrow {
-      border-width: 0 0 15px 7px;
-      border-color: transparent transparent transparent $purple;
+      border-width: 0 0 30rpx 14rpx;
+      border-color: transparent transparent transparent $chat;
       left: initial;
-      right: 49px;
-      top: 20px;
+      right: 100rpx;
+      top: 40rpx;
     }
     .text {
       color: $font-color;
@@ -184,18 +186,18 @@ $font-color: #606c76;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 80px;
-      height: 80px;
+      width: 160rpx;
+      height: 160rpx;
     }
     .progress-number {
       color: $font-color;
       text-align: center;
-      line-height: 80px;
-      font-size: 18px;
+      line-height: 160rpx;
+      font-size: 36rpx;
     }
     .img {
-      max-width: 500px;
-      max-height: 400px;
+      max-width: 1000rpx;
+      max-height: 800rpx;
     }
 
     &.loading {
