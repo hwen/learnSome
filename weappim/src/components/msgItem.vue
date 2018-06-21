@@ -15,9 +15,9 @@
         <span class="time">{{formatedTime}}</span>
       </div>
       <div class="content">
-        <div class="text">{{text}}</div>
+        <div class="text" v-html="contentHTML"></div>
       </div>
-      <div class="arrow"></div>
+      <!-- <div class="arrow"></div> -->
     </div>
   </div>
   <div v-if="data.msgContent.type === 'groupTip'" class="group-tip">
@@ -41,8 +41,21 @@ export default {
   },
   created() {},
   computed: {
-    text: function() {
-      return JSON.stringify(this.data.msgContent);
+    contentHTML: function() {
+      const msgContent = this.data.msgContent;
+      if (typeof msgContent === 'string') {
+        return msgContent;
+      } else {
+        switch (msgContent.type) {
+          case 'image':
+            let html = `<img class='image' src='${msgContent.smallImg}'>`;
+            return html;
+          case 'audio':
+            return JSON.stringify(this.data.msgContent);
+          default:
+            return JSON.stringify(this.data.msgContent);
+        }
+      }
     },
     formatedTime: function() {
       return formatTime(new Date(this.data.time * 1000));
@@ -74,7 +87,8 @@ $font-color: #606c76;
   display: flex;
   margin-right: 108rpx;
   margin-left: 20rpx;
-  margin-bottom: 20rpx;
+  margin-bottom: 10rpx;
+  padding: 20rpx 0 10rpx;
   position: relative;
 
   .avatar {
@@ -128,7 +142,7 @@ $font-color: #606c76;
     border-width: 0 14rpx 30rpx 0;
     border-color: transparent $chat transparent transparent;
     position: absolute;
-    top: 46rpx;
+    top: 68rpx;
     left: 100rpx;
   }
   &.self {
@@ -196,8 +210,8 @@ $font-color: #606c76;
       font-size: 36rpx;
     }
     .img {
-      max-width: 1000rpx;
-      max-height: 800rpx;
+      max-width: 320rpx;
+      max-height: 320rpx;
     }
 
     &.loading {

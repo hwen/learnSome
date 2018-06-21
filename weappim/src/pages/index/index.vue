@@ -121,7 +121,7 @@ export default {
     loadHistory() {
       this.clearScrollFlag();
       this.im.loadMsgHistory(
-        5,
+        15,
         resp => {
           ilog('加载历史消息成功~');
           console.log(resp);
