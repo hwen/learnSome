@@ -1,8 +1,7 @@
 <template>
-<div class="msg-box">
+<div class="wim-msg-box" :id='data.sessType + data.seq'>
   <div 
-    :class="['chat-message', isSelf ? 'self' : '']"
-    :id='data.sessType + data.seq'
+    :class="['wim-chat-message', isSelf ? 'self' : '']"
     v-if="!data.msgContent || (data.msgContent.type !== 'groupTip')"
   >
     <img class="avatar" :src="isSelf ? 'https://cdn.suisuijiang.com/fiora/avatar/2.jpg' : 'https://cdn.suisuijiang.com/fiora/./avatar/10.jpg'" alt="sdf">
@@ -20,14 +19,14 @@
       <!-- <div class="arrow"></div> -->
     </div>
   </div>
-  <div v-if="data.msgContent.type === 'groupTip'" class="group-tip">
+  <div v-if="data.msgContent.type === 'groupTip'" class="wim-group-tip">
     <p>{{data.msgContent.content}}</p>
   </div>
 </div>
 </template>
 
 <script>
-import { getProp, formatTime } from '@/utils';
+import { formatTime } from '../utils';
 
 export default {
   props: {
@@ -73,7 +72,7 @@ $orange: #ed9153;
 $yellow: #fbd157;
 $chat: $yellow;
 $font-color: #606c76;
-.group-tip {
+.wim-group-tip {
   font-size: 20rpx;
   background: #dcdcdc;
   color: $font-color;
@@ -83,7 +82,7 @@ $font-color: #606c76;
   margin: 24rpx auto;
   text-align: center;
 }
-.chat-message {
+.wim-chat-message {
   display: flex;
   margin-right: 108rpx;
   margin-left: 20rpx;

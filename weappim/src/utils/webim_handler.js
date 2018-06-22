@@ -1302,6 +1302,68 @@ function getLastGroupHistoryMsgs(reqMsgCount, cbOk, cbError) {
   );
 }
 
+function createGroup() {
+  var sel_friends = $('#select_friends').val();
+
+  var member_list = [];
+  var members = sel_friends.split(';'); //字符分割
+  for (var i = 0; i < members.length; i++) {
+    if (members[i] && members[i].length > 0) {
+      member_list.push(members[i]);
+    }
+  }
+
+  if ($('#cg_name').val().length == 0) {
+    alert('请输入群组名称');
+    return;
+  }
+  if (webim.Tool.trimStr($('#cg_name').val()).length == 0) {
+    alert('您输入的群组名称全是空格,请重新输入');
+    return;
+  }
+  if (webim.Tool.getStrBytes($('#cg_name').val()) > 30) {
+    alert('您输入的群组名称超出限制(最长10个汉字)');
+    return;
+  }
+  if (webim.Tool.getStrBytes($('#cg_notification').val()) > 150) {
+    alert('您输入的群组公告超出限制(最长50个汉字)');
+    return;
+  }
+  if (webim.Tool.getStrBytes($('#cg_introduction').val()) > 120) {
+    alert('您输入的群组简介超出限制(最长40个汉字)');
+    return;
+  }
+  var groupType = $('input[name="cg_type_radio"]:checked').val();
+  var options = {
+    GroupId: $('#cg_id').val(),
+    Owner_Account: loginInfo.identifier,
+    Type: groupType, //Private/Public/ChatRoom/AVChatRoom
+    Name: $('#cg_name').val(),
+    FaceUrl: '',
+    Notification: $('#cg_notification').val(),
+    Introduction: $('#cg_introduction').val(),
+    MemberList: b
+  };
+  if (groupType != 'Private') {
+    //非讨论组才支持ApplyJoinOption属性
+    options.ApplyJoinOption = $(
+      'input[name="cg_ajp_type_radio"]:checked'
+    ).val();
+  }
+  webim.createGroup(
+    options,
+    function(resp) {
+      $('#create_group_dialog').modal('hide');
+      alert('创建群成功');
+      //读取我的群组列表
+      getJoinedGroupListHigh(getGroupsCallbackOK);
+    },
+    function(err) {
+      alert(err.ErrorInfo);
+    }
+  );
+}
+
 module.exports = {
   init: init,
   setLog: setLog,
@@ -1309,6 +1371,7 @@ module.exports = {
   getLastC2CHistoryMsgs: getLastC2CHistoryMsgs,
   getLastGroupHistoryMsgs: getLastGroupHistoryMsgs,
   formatMsg: formatMsg,
+  createGroup: createGroup,
   onBigGroupMsgNotify: onBigGroupMsgNotify,
   onMsgNotify: onMsgNotify,
   handlderMsg: handlderMsg,

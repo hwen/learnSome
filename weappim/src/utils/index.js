@@ -18,37 +18,6 @@ export function formatTime(date) {
   return `${t1} ${t2}`;
 }
 
-export function getProp(obj, path) {
-  let tempObj = obj;
-  path = path.replace(/\[(\w+)\]/g, '.$1');
-  path = path.replace(/^\./, '');
-
-  let keyArr = path.split('.');
-  let i = 0;
-  for (let len = keyArr.length; i < len - 1; ++i) {
-    // 如果 obj 为空，返回 undefined
-    if (!tempObj) return undefined;
-    let key = keyArr[i];
-    if (key in tempObj) {
-      tempObj = tempObj[key];
-    } else {
-      // 没找到 path 返回 undefined
-      return undefined;
-    }
-  }
-  return tempObj;
-}
-
-export function omit(obj, paths) {
-  let temp = {};
-  for (let key in obj) {
-    if (paths.indexOf(key) === -1) {
-      temp[key] = obj[key];
-    }
-  }
-  return temp;
-}
-
 export default {
   formatNumber,
   formatTime

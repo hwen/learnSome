@@ -1,5 +1,5 @@
 <template>
-<div class="msg-list">
+<div class="wim-msg-list">
   <scroll-view
     class="msg-list-scroller"
     scroll-y
@@ -19,8 +19,7 @@
 </template>
 
 <script>
-import { getProp } from '@/utils';
-import MsgItem from './msgItem';
+import MsgItem from './msgItem.vue';
 
 export default {
   components: {
@@ -40,18 +39,25 @@ export default {
     },
     toItem: {
       type: String
+    },
+    // 单位是 rpx
+    top: {
+      type: Number,
+      default: 0
+    },
+    bottom: {
+      type: Number,
+      default: 100
     }
   },
   data() {
     return {
-      windowHeight: 0,
-      // rpx
-      bottom: 100,
-      top: 0
+      windowHeight: 0
     };
   },
   created() {
     const sysInfo = wx.getSystemInfoSync();
+    // 可用高度转化成rpx
     this.ratio = 750 / sysInfo.screenWidth;
     this.windowHeight = this.ratio * sysInfo.windowHeight;
   },
@@ -63,9 +69,7 @@ export default {
 
   methods: {
     loadMore() {
-      ilog('滚动到顶部了。。。。');
       if (this.hasMore) {
-        ilog('加载更多历史信息。。。');
         this.$emit('loadMore');
       }
     }
@@ -74,12 +78,12 @@ export default {
 </script>
 
 <style lang='scss'>
-.msg-list {
+.wim-msg-list {
   width: 100%;
   height: 100%;
-}
-.msg-list-scroller {
-  position: absolute;
-  background: #f5f5f5;
+  .msg-list-scroller {
+    position: absolute;
+    background: #f5f5f5;
+  }
 }
 </style>

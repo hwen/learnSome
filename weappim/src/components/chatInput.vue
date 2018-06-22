@@ -1,5 +1,5 @@
 <template>
-<div class="chat-input">
+<div class="wim-chat-input">
   <input
     class="input-field"
     type="text"
@@ -33,8 +33,8 @@ export default {
       const { im } = this;
       if (!im || !msg) return;
       im.sendMsg(msg, resp => {
-        ilog('发送消息成功');
-        ilog(resp);
+        console.log('发送消息成功');
+        console.log(resp);
         this.$emit('sendMsg', resp);
         this.inputValue = '';
       });
@@ -43,7 +43,7 @@ export default {
 };
 </script>
 <style lang='scss'>
-.chat-input {
+.wim-chat-input {
   height: 100rpx;
   width: 100%;
   position: fixed;
