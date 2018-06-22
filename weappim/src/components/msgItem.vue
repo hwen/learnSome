@@ -11,15 +11,15 @@
       <div class="nickname-time">
         <!-- <span class="tag"></span> -->
         <span class="nickname">{{data.fromAccountNick}}</span>
-        <span class="time">{{formatedTime}}</span>
+        <!-- <span class="time">{{formatedTime}}</span> -->
       </div>
-      <div class="content">
+      <div class="content" :style="{background: styl.msgColor, color: styl.fontColor}">
         <div class="text" v-html="contentHTML"></div>
       </div>
       <!-- <div class="arrow"></div> -->
     </div>
   </div>
-  <div v-if="data.msgContent.type === 'groupTip'" class="wim-group-tip">
+  <div v-if="data.msgContent.type === 'groupTip'" class="wim-tip">
     <p>{{data.msgContent.content}}</p>
   </div>
 </div>
@@ -36,6 +36,9 @@ export default {
     },
     isSelf: {
       type: Boolean
+    },
+    uiConfig: {
+      type: Object
     }
   },
   created() {},
@@ -58,6 +61,14 @@ export default {
     },
     formatedTime: function() {
       return formatTime(new Date(this.data.time * 1000));
+    },
+    styl: function() {
+      let defaultStyl = {
+        msgColor: '#fbd157',
+        fontColor: '#606c76'
+      };
+      const { to, self } = this.uiConfig;
+      return this.isSelf ? self || defaultStyl : to || defaultStyl;
     }
   },
   methods: {
@@ -72,20 +83,18 @@ $orange: #ed9153;
 $yellow: #fbd157;
 $chat: $yellow;
 $font-color: #606c76;
-.wim-group-tip {
-  font-size: 20rpx;
-  background: #dcdcdc;
-  color: $font-color;
-  padding: 8rpx 16rpx;
-  border-radius: 32rpx;
-  width: 50%;
-  margin: 24rpx auto;
+$tip-color: #a7a7a9;
+.wim-tip {
+  color: $tip-color;
+  width: 80%;
+  margin: 36rpx auto;
   text-align: center;
+  font-size: 28rpx;
 }
 .wim-chat-message {
   display: flex;
   margin-right: 108rpx;
-  margin-left: 20rpx;
+  margin-left: 32rpx;
   margin-bottom: 10rpx;
   padding: 20rpx 0 10rpx;
   position: relative;
@@ -108,7 +117,7 @@ $font-color: #606c76;
     padding: 0 12rpx;
     display: inline-block;
     font-size: 20rpx;
-    background-color: white;
+    background: $purple;
     color: $font-color;
     transform: translateY(-1px);
   }
@@ -124,10 +133,11 @@ $font-color: #606c76;
     margin-left: 16rpx;
   }
   .content {
-    display: inline-block;
+    display: flex;
+    align-items: center;
     color: $font-color;
     font-size: 28rpx;
-    background-color: $chat;
+    background: $chat;
     padding: 12rpx 16rpx;
     border-radius: 16rpx;
     border-top-left-radius: 0;
@@ -146,7 +156,7 @@ $font-color: #606c76;
   }
   &.self {
     flex-direction: row-reverse;
-    margin-right: 20rpx;
+    margin-right: 32rpx;
     margin-left: 108rpx;
 
     .right {
@@ -168,7 +178,7 @@ $font-color: #606c76;
     }
     .content {
       color: rgba(255, 255, 255, 0.9);
-      background-color: $chat;
+      background: $chat;
       border-top-left-radius: 16rpx;
       border-top-right-radius: 0px;
     }

@@ -5,10 +5,12 @@
       :self-id="imConfig.identifier"
       :has-more="hasMore"
       :to-item="toItem"
+      :ui-config="uiConfig"
       @loadMore="loadHistory"
     >
     </msg-list>
     <chat-input
+      v-show="uiConfig.isShowChatInput"
       :im="im"
       @sendMsg="onSendMsg"
     ></chat-input>
@@ -31,6 +33,10 @@ export default {
       required: true
     },
     userInfo: {
+      type: Object,
+      required: true
+    },
+    uiConfig: {
       type: Object,
       required: true
     }

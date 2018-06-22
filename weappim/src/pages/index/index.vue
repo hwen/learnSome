@@ -1,6 +1,7 @@
 <template>
   <weapp-im
     :im-config="imConfig"
+    :ui-config="uiConfig"
     :user-info="userInfo"
   ></weapp-im>
 </template>
@@ -19,6 +20,23 @@ const imConfig = {
   selToID: config.group // 聊天对象ID
 };
 
+const uiConfig = {
+  to: {
+    msgColor: '#EAEBF0',
+    fontColor: '#46474B'
+  },
+  self: {
+    msgColor: '#C2DAFE',
+    fontColor: '#100'
+  },
+  msgBox: {
+    top: 0,
+    bottom: 100
+  },
+  background: '',
+  isShowChatInput: true
+};
+
 export default {
   components: {
     WeappIm
@@ -27,7 +45,8 @@ export default {
     return {
       motto: 'Hello World--',
       userInfo: {},
-      imConfig: imConfig
+      imConfig: imConfig,
+      uiConfig: uiConfig
     };
   },
 

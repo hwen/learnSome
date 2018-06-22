@@ -4,7 +4,7 @@
     class="input-field"
     type="text"
     v-model="inputValue"
-    placeholder="请输入内容"
+    placeholder=" 请在这里输入信息..."
     @confirm="sendMsg"
   >
   <div class="more-btn">

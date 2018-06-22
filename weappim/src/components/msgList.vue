@@ -4,14 +4,15 @@
     class="msg-list-scroller"
     scroll-y
     scroll-with-animation
-    :scroll-into-view='toItem'
+    :scroll-into-view="toItem"
     @scrolltoupper="loadMore"
-    :style="{height: scrollHeight+'rpx', top: top+'rpx', bottom: bottom+'rpx' }"
+    :style="{background: scrollStyle.background, height: scrollStyle.height, top: scrollStyle.top, bottom: scrollStyle.bottom}"
   >
     <msg-item
-      :key='item.time'
-      v-for='item in list'
-      :data='item'
+      :key="item.time"
+      v-for="item in list"
+      :data="item"
+      :ui-config="uiConfig"
       :is-self='item.fromAccount == selfId'>
     </msg-item>
   </scroll-view>
@@ -30,6 +31,10 @@ export default {
       type: Array,
       required: true
     },
+    uiConfig: {
+      type: Object,
+      required: true
+    },
     selfId: {
       type: String
     },
@@ -39,20 +44,13 @@ export default {
     },
     toItem: {
       type: String
-    },
-    // 单位是 rpx
-    top: {
-      type: Number,
-      default: 0
-    },
-    bottom: {
-      type: Number,
-      default: 100
     }
   },
   data() {
     return {
-      windowHeight: 0
+      windowHeight: 0,
+      top: 0,
+      bottom: 100
     };
   },
   created() {
@@ -64,6 +62,23 @@ export default {
   computed: {
     scrollHeight: function() {
       return this.windowHeight - this.bottom - this.top;
+    },
+    top: function() {
+      const { msgBox } = this.uiConfig;
+      if (msgBox.top) this.top = ~~msgBox.top;
+    },
+    bottom: function() {
+      const { msgBox } = this.uiConfig;
+      if (msgBox.bottom) this.bottom = ~~msgBox.bottom;
+    },
+    scrollStyle: function() {
+      const background = '#ffffff';
+      return {
+        background: this.uiConfig.background || background,
+        bottom: `${this.bottom}rpx`,
+        top: `${this.top}rpx`,
+        height: `${this.scrollHeight}rpx`
+      };
     }
   },
 
