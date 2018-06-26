@@ -13,7 +13,7 @@ export default class IM {
     this.init(config);
   }
 
-  islogin() {
+  static isLogin() {
     return webimhandler.isLogin();
   }
 
@@ -129,46 +129,7 @@ export default class IM {
     }
   }
 
-  // 上传图片
-  // uploadPic() {
-  //   const uploadFiles = document.getElementById('upd_pic');
-  //   var file = uploadFiles.files[0];
-  //   wx.chooseImage({
-  //     success: filePaths => {
-  //       console.log(filePaths);
-  //     },
-  //     fail: err => {
-  //       console.error(err);
-  //     }
-  //   });
-  //   var businessType; // 业务类型，1-发群图片，2-向好友发图片
-  //   if (this.config.selType === C2C) {
-  //     // 向好友发图片
-  //     businessType = UploadPicBussinessType.C2C_MSG;
-  //   } else if (this.config.selType === GROUP) {
-  //     // 发群图片
-  //     businessType = UploadPicBussinessType.GROUP_MSG;
-  //   }
-  //   // 封装上传图片请求
-  //   var opt = {
-  //     file: file, // 图片对象
-  //     onProgressCallBack: onProgressCallBack, // 上传图片进度条回调函数
-  //     // 'abortButton': document.getElementById('upd_abort'), //停止上传图片按钮
-  //     From_Account: loginInfo.identifier, // 发送者帐号
-  //     To_Account: selToID, // 接收者
-  //     businessType: businessType // 业务类型
-  //   };
-  //   // 上传图片
-  //   webim.uploadPic(
-  //     opt,
-  //     function(resp) {
-  //       // 上传成功发送图片
-  //       sendPic(resp);
-  //       $('#upload_pic_dialog').modal('hide');
-  //     },
-  //     function(err) {
-  //       console.log(err.ErrorInfo);
-  //     }
-  //   );
-  // }
+  sendPicMsg(opts, cbOk, cbErr) {
+    webimhandler.sendPicMsg(opts, cbOk, cbErr);
+  }
 }

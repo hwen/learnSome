@@ -7,7 +7,7 @@
     placeholder=" 请在这里输入信息..."
     @confirm="sendMsg"
   >
-  <div class="more-btn">
+  <div class="more-btn" @click="chooseImg">
     更多
   </div>
 </div>
@@ -38,6 +38,9 @@ export default {
         this.$emit('sendMsg', resp);
         this.inputValue = '';
       });
+    },
+    chooseImg() {
+      this.$emit('chooseImg');
     }
   }
 };

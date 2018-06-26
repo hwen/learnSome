@@ -1364,9 +1364,81 @@ function createGroup() {
   );
 }
 
+function sendPicMsg(opts, cbOk, cbErr) {
+  const pos = opts.base64Str.indexOf(',');
+  if (pos != -1) {
+    opts.base64Str = opts.base64Str.substr(pos + 1);
+  }
+  webim.uploadFileByBase64(
+    opts,
+    resp => {
+      sendPic(resp, cbOk, cbErr);
+    },
+    cbErr
+  );
+}
+
+//发送图片
+function sendPic(images, cbOk, cbErr) {
+  let friendHeadUrl = '';
+  if (!selToID) {
+    alert('您还没有好友，暂不能聊天');
+    return;
+  }
+  if (!selSess) {
+    selSess = new webim.Session(
+      selType,
+      selToID,
+      selToID,
+      friendHeadUrl,
+      Math.round(new Date().getTime() / 1000)
+    );
+  }
+  const msg = new webim.Msg(selSess, true);
+  const images_obj = new webim.Msg.Elem.Images(images.File_UUID);
+  for (let i in images.URL_INFO) {
+    let img = images.URL_INFO[i];
+    let newImg;
+    let type;
+    switch (img.PIC_TYPE) {
+      case 1: //原图
+        type = 1; //原图
+        break;
+      case 2: //小图（缩略图）
+        type = 3; //小图
+        break;
+      case 4: //大图
+        type = 2; //大图
+        break;
+    }
+    newImg = new webim.Msg.Elem.Images.Image(
+      type,
+      img.PIC_Size,
+      img.PIC_Width,
+      img.PIC_Height,
+      img.DownUrl
+    );
+    images_obj.addImage(newImg);
+  }
+  msg.addImage(images_obj);
+  //调用发送图片接口
+  webim.sendMsg(
+    msg,
+    function(resp) {
+      cbOk && cbOk(msg);
+      // addMsg(msg);
+    },
+    function(err) {
+      cbErr && cbErr(err);
+      console.error(err.ErrorInfo);
+    }
+  );
+}
+
 module.exports = {
   init: init,
   setLog: setLog,
+  sendPicMsg: sendPicMsg,
   isLogin: () => loginInfo && loginInfo.identifier,
   getLastC2CHistoryMsgs: getLastC2CHistoryMsgs,
   getLastGroupHistoryMsgs: getLastGroupHistoryMsgs,

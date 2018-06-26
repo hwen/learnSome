@@ -1,3 +1,4 @@
+
 <template>
   <div class="wim-container">
     <msg-list
@@ -13,6 +14,7 @@
       v-show="uiConfig.isShowChatInput"
       :im="im"
       @sendMsg="onSendMsg"
+      @chooseImg="onChooseImg"
     ></chat-input>
   </div>
 </template>
@@ -148,6 +150,58 @@ export default {
         this.msgList.push(msg);
         this.scrollToLastMsg();
       }
+    },
+    onChooseImg() {
+      let file = null;
+      // const { IMAGE } = webim.UPLOAD_RES_TYPE;
+      const opts = {
+        count: 1,
+        success: files => {
+          console.log(files);
+          wx.uploadFile({
+            url: 'http://local.me:2333/upload/img',
+            filePath: files.tempFilePaths[0],
+            name: 'img',
+            formData: {
+              k: 'fuckyouman'
+            },
+            success: resp => {
+              console.log('====== upload resp =========');
+              const opts = JSON.parse(resp.data);
+              console.log(opts);
+              const bsnType = this.imConfig.selType === 'GROUP' ? 1 : 2;
+
+              const uploadData = {
+                fromAccount: this.imConfig.identifier,
+                toAccount: this.imConfig.selToID,
+                // 图片或文件的业务类型，群消息:1; c2c消息:2; 个人头像：3; 群头像：4
+                businessType: bsnType,
+                // fileType: 1,
+                fileMd5: opts.md5,
+                totalSize: opts.totalSize,
+                base64Str: opts.base64Str
+              };
+              console.log('ready upload data..........');
+              console.log(uploadData);
+              this.uploadPic(
+                uploadData,
+                uploadRes => {
+                  console.log('上传成功。。。。。');
+                  console.log(uploadRes);
+                },
+                uploadErr => {
+                  console.log('上传错误。。。。。');
+                  console.log(uploadErr);
+                }
+              );
+            }
+          });
+        }
+      };
+      wx.chooseImage(opts);
+    },
+    uploadPic(opts, cbOk, cbErr) {
+      this.im.sendPicMsg(opts, cbOk, cbErr);
     }
   }
 };
