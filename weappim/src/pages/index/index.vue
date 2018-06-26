@@ -13,11 +13,11 @@ const imConfig = {
   accountMode: config.accountMode, // 后台账号模式
   accountType: config.accountType, // 后台账号类型
   sdkappid: config.sdkappid, // sdkid
-  group: config.group, // 群组id
+  group: '@TGS#32LDNEJFF', // 群组id
   userSig: config.user2.sig, // 用户 sig
-  identifier: config.user2.id, // 用户 id
+  id: config.user2.id, // 用户 id
   selType: 'GROUP', // 会话类型
-  selToID: config.group // 聊天对象ID
+  toId: 'newman' // 聊天对象ID
 };
 
 const uiConfig = {

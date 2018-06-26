@@ -60,6 +60,7 @@ function formatMsg(msg, msgContent) {
   return {
     fromAccount: msg.getFromAccount(),
     fromAccountNick: msg.getFromAccountNick(),
+    fromAccountHead: msg.getFromAccountHead(),
     time: msg.getTime(),
     seq: msg.getSeq(),
     isSend: msg.getIsSend(),
@@ -148,26 +149,29 @@ function sdkLogin(userInfo, listeners, options, avChatRoomId, cb) {
     userInfo,
     listeners,
     options,
-    function(identifierNick) {
-      console.debug(identifierNick);
+    function(resp) {
+      console.debug(resp);
       //identifierNick为登录用户昵称(没有设置时，为帐号)，无登录态时为空
       webim.Log.info('webim登录成功');
       console.log('gg: webim 登陆成功.......');
+      console.log(resp);
       loginInfo = userInfo;
-      setProfilePortrait(
-        {
+      // 设置头像
+      if (!resp.headurl && userInfo.avatar) {
+        setProfilePortrait({
           ProfileItem: [
             {
-              Tag: 'Tag_Profile_IM_Nick',
-              Value: userInfo.identifierNick
+              Tag: 'Tag_Profile_IM_Image',
+              Value: userInfo.avatar
             }
           ]
-        },
-        function() {
-          avChatRoomId && applyJoinBigGroup(avChatRoomId); //加入大群
-        }
-      );
-      cb && cb();
+        });
+      }
+      if (avChatRoomId) {
+        applyJoinGroup({ groudId: avChatRoomId }, cb, cb); //加群
+      } else {
+        cb && cb();
+      }
       //hideDiscussForm();//隐藏评论表单
       //initEmotionUL();//初始化表情
     },
@@ -177,12 +181,12 @@ function sdkLogin(userInfo, listeners, options, avChatRoomId, cb) {
   ); //
 }
 
-//修改昵称
+//修改头像
 function setProfilePortrait(options, callback) {
   webim.setProfilePortrait(
     options,
     function(res) {
-      webim.Log.info('修改昵称成功');
+      webim.Log.info('修改头像成功');
       callback && callback();
     },
     function() {}
@@ -1302,64 +1306,87 @@ function getLastGroupHistoryMsgs(reqMsgCount, cbOk, cbError) {
   );
 }
 
-function createGroup() {
-  var sel_friends = $('#select_friends').val();
+function createGroup(opts, cbOk, cbErr) {
+  const {
+    groudId,
+    name,
+    faceUrl,
+    invitedFriends, // 只能邀请好友
+    notification,
+    introduction,
+    groupType,
+    joinOption // FreeAccess, NeedPermission, DisableApply
+  } = opts;
 
-  var member_list = [];
-  var members = sel_friends.split(';'); //字符分割
-  for (var i = 0; i < members.length; i++) {
-    if (members[i] && members[i].length > 0) {
-      member_list.push(members[i]);
-    }
+  const setErr = msg => cbErr && cbErr(msg);
+
+  if (!name || name.length == 0) {
+    setErr('请输入群组名称');
+    return;
+  }
+  if (webim.Tool.trimStr(name).length == 0) {
+    setErr('您输入的群组名称全是空格,请重新输入');
+    return;
+  }
+  if (webim.Tool.getStrBytes(name) > 30) {
+    setErr('您输入的群组名称超出限制(最长10个汉字)');
+    return;
+  }
+  if (webim.Tool.getStrBytes(notification) > 150) {
+    setErr('您输入的群组公告超出限制(最长50个汉字)');
+    return;
+  }
+  if (webim.Tool.getStrBytes(introduction) > 120) {
+    setErr('您输入的群组简介超出限制(最长40个汉字)');
+    return;
   }
 
-  if ($('#cg_name').val().length == 0) {
-    alert('请输入群组名称');
-    return;
-  }
-  if (webim.Tool.trimStr($('#cg_name').val()).length == 0) {
-    alert('您输入的群组名称全是空格,请重新输入');
-    return;
-  }
-  if (webim.Tool.getStrBytes($('#cg_name').val()) > 30) {
-    alert('您输入的群组名称超出限制(最长10个汉字)');
-    return;
-  }
-  if (webim.Tool.getStrBytes($('#cg_notification').val()) > 150) {
-    alert('您输入的群组公告超出限制(最长50个汉字)');
-    return;
-  }
-  if (webim.Tool.getStrBytes($('#cg_introduction').val()) > 120) {
-    alert('您输入的群组简介超出限制(最长40个汉字)');
-    return;
-  }
-  var groupType = $('input[name="cg_type_radio"]:checked').val();
-  var options = {
-    GroupId: $('#cg_id').val(),
+  const options = {
+    GroupId: groudId,
     Owner_Account: loginInfo.identifier,
     Type: groupType, //Private/Public/ChatRoom/AVChatRoom
-    Name: $('#cg_name').val(),
-    FaceUrl: '',
-    Notification: $('#cg_notification').val(),
-    Introduction: $('#cg_introduction').val(),
-    MemberList: b
+    Name: name,
+    FaceUrl: faceUrl,
+    Notification: notification,
+    Introduction: introduction,
+    MemberList: invitedFriends
   };
   if (groupType != 'Private') {
-    //非讨论组才支持ApplyJoinOption属性
-    options.ApplyJoinOption = $(
-      'input[name="cg_ajp_type_radio"]:checked'
-    ).val();
+    //非讨论组(私有群即讨论组)才支持ApplyJoinOption属性
+    options.ApplyJoinOption = joinOption;
   }
+  console.log('===== 准备创建群 ======');
+  console.log(options);
   webim.createGroup(
     options,
     function(resp) {
-      $('#create_group_dialog').modal('hide');
-      alert('创建群成功');
-      //读取我的群组列表
-      getJoinedGroupListHigh(getGroupsCallbackOK);
+      cbOk && cbOk(resp);
     },
     function(err) {
-      alert(err.ErrorInfo);
+      cbErr && cbErr(err);
+    }
+  );
+}
+
+//申请加群
+function applyJoinGroup(opts, cbOk, cbErr) {
+  const { applyMsg, groudId } = opts;
+  if (applyMsg && webim.Tool.getStrBytes(applyMsg) > 300) {
+    cbErr && cbErr('您输入的附言超出限制(最长100个汉字)');
+    return;
+  }
+  const options = {
+    GroupId: groudId,
+    ApplyMsg: applyMsg || '',
+    UserDefinedField: ''
+  };
+  webim.applyJoinGroup(
+    options,
+    function(resp) {
+      cbOk && cbOk(resp);
+    },
+    function(err) {
+      cbErr && cbErr(err);
     }
   );
 }
@@ -1439,6 +1466,7 @@ module.exports = {
   init: init,
   setLog: setLog,
   sendPicMsg: sendPicMsg,
+  applyJoinGroup: applyJoinGroup,
   isLogin: () => loginInfo && loginInfo.identifier,
   getLastC2CHistoryMsgs: getLastC2CHistoryMsgs,
   getLastGroupHistoryMsgs: getLastGroupHistoryMsgs,

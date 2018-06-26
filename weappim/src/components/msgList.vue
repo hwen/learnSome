@@ -13,7 +13,14 @@
       v-for="item in list"
       :data="item"
       :ui-config="uiConfig"
+      :wechat-avatar="wechatAvatar"
       :is-self='item.fromAccount == selfId'>
+    </msg-item>
+    <!--<msg-item-->
+      <!--v-if="!list || list.length < 1"-->
+      <!--:data="defaultMsg"-->
+      <!--:ui-config="uiConfig"-->
+    <!--&gt;-->
     </msg-item>
   </scroll-view>
 </div>
@@ -44,13 +51,22 @@ export default {
     },
     toItem: {
       type: String
+    },
+    wechatAvatar: {
+      type: String
     }
   },
   data() {
     return {
       windowHeight: 0,
       top: 0,
-      bottom: 100
+      bottom: 100,
+      defaultMsg: {
+        msgContent: {
+          type: 'groupTip',
+          content: '已进入聊天室'
+        }
+      }
     };
   },
   created() {

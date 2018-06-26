@@ -3,10 +3,11 @@
   <div class="wim-container">
     <msg-list
       :list="msgList"
-      :self-id="imConfig.identifier"
+      :self-id="imConfig.id"
       :has-more="hasMore"
       :to-item="toItem"
       :ui-config="uiConfig"
+      :wechat-avatar="wechatAvatar"
       @loadMore="loadHistory"
     >
     </msg-list>
@@ -48,7 +49,15 @@ export default {
       connMsg: '',
       // 有新消息时，滚动到新消息处
       toItem: '',
+      pullHistoryCount: 0,
+      wechatAvatar: '',
       msgList: [],
+      defaultMsg: {
+        msgContent: {
+          type: 'groupTip',
+          content: '已可以开始聊天'
+        }
+      },
       im: null,
       hasMore: false
     };
@@ -68,15 +77,17 @@ export default {
     initIM(userInfo) {
       if (userInfo && userInfo.nickName && !this.im) {
         console.log(
-          `initIm => type: ${this.imConfig.selType}, selToID: ${
-            this.imConfig.selToID
-          }`
+          `initIm => type: ${this.imConfig.selType}, toId: ${
+            this.imConfig.toId
+          }, groud: ${this.imConfig.group}`
         );
         const listeners = {
           onConnNotify: this.onConnNotify.bind(this),
           onMsgNotify: this.onMsgNotify.bind(this),
-          onLogin: this.onLogin.bind(this)
+          // onLogin: this.onLogin.bind(this)
+          onReadyChat: this.onLogin.bind(this)
         };
+        this.wechatAvatar = userInfo.avatarUrl;
         this.im = new IM(
           Object.assign(
             {
@@ -106,6 +117,7 @@ export default {
     },
     scrollToLastMsg() {
       const lastItem = this.msgList[this.msgList.length - 1];
+      if (!lastItem) return;
       this.toItem = lastItem.sessType + lastItem.seq;
       setTimeout(() => {
         this.toItem = '';
@@ -126,14 +138,19 @@ export default {
           console.log('加载历史消息成功~');
           console.log(resp);
           this.hasMore = resp.Complete === 0;
-          let firstPull = this.msgList.length === 0;
+          this.pullHistoryCount++;
           this.msgList = (resp.msgList || []).concat(this.msgList);
-          if (firstPull) {
-            console.log('第一次拉取');
-            this.test = 2;
+          if (this.pullHistoryCount === 1) {
+            console.log('第一次加载');
+            this.msgList =
+              resp.msgList && resp.msgList.length
+                ? resp.msgList
+                : [this.defaultMsg];
             setTimeout(() => {
               this.scrollToLastMsg();
             }, 500);
+          } else {
+            this.msgList = (resp.msgList || []).concat(this.msgList);
           }
         },
         err => {
@@ -152,7 +169,6 @@ export default {
       }
     },
     onChooseImg() {
-      let file = null;
       // const { IMAGE } = webim.UPLOAD_RES_TYPE;
       const opts = {
         count: 1,
@@ -163,7 +179,7 @@ export default {
             filePath: files.tempFilePaths[0],
             name: 'img',
             formData: {
-              k: 'fuckyouman'
+              test: 'hiall'
             },
             success: resp => {
               console.log('====== upload resp =========');
@@ -172,8 +188,8 @@ export default {
               const bsnType = this.imConfig.selType === 'GROUP' ? 1 : 2;
 
               const uploadData = {
-                fromAccount: this.imConfig.identifier,
-                toAccount: this.imConfig.selToID,
+                fromAccount: this.imConfig.id,
+                toAccount: this.imConfig.toId,
                 // 图片或文件的业务类型，群消息:1; c2c消息:2; 个人头像：3; 群头像：4
                 businessType: bsnType,
                 // fileType: 1,

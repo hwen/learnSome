@@ -3411,12 +3411,14 @@ module.exports = (function() {
       time,
       fromAccount,
       subType,
-      fromAccountNick
+      fromAccountNick,
+      fromAccountHeadurl
     ) {
       this.sess = sess;
       this.subType = subType >= 0 ? subType : 0; //消息类型,c2c消息时，type取值为0；group消息时，type取值0和1，0-普通群消息，1-群提示消息
       this.fromAccount = fromAccount;
       this.fromAccountNick = fromAccountNick ? fromAccountNick : fromAccount;
+      this.fromAccountHeadurl = fromAccountHeadurl || '';
       this.isSend = Boolean(isSend);
       this.seq = seq >= 0 ? seq : nextSeq();
       this.random = random >= 0 ? random : createRandom();
@@ -3437,6 +3439,9 @@ module.exports = (function() {
     };
     Msg.prototype.getFromAccountNick = function() {
       return this.fromAccountNick;
+    };
+    Msg.prototype.getFromAccountHead = function() {
+      return this.fromAccountHeadurl;
     };
     Msg.prototype.getIsSend = function() {
       return this.isSend;

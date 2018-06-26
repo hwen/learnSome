@@ -17,8 +17,14 @@ export default class IM {
     return webimhandler.isLogin();
   }
 
-  initChat(selToID, selType = C2C, selSess = null) {
-    const avChatRoomId = selType === GROUP ? selToID : null;
+  initChat(config, selSess = null) {
+    let avChatRoomId = null;
+    let selToID = config.toId || '';
+    let selType = config.selType === 'C2C' ? C2C : GROUP;
+    if (selType === GROUP) {
+      avChatRoomId = config.group || null;
+      selToID = config.group || null;
+    }
     Object.assign(this.config, {
       selType,
       selToID,
@@ -35,20 +41,42 @@ export default class IM {
     });
   }
 
-  init(config) {
-    const that = this;
-    const avChatRoomId = config.avChatRoomId;
-    this.isLogOn = config.isLogOn || false;
+  // 创建默认的可直接加入的聊天室
+  initGroup(opts, cbOk, cbErr) {
+    const groupOpts = Object.assign(
+      {
+        // groudId: `@TGS#testtesttest${this.config.id}-${Math.round(
+        //   Math.random() * Date.now()
+        // )}`,
+        invitedFriends: [],
+        notification: '',
+        introduction: '',
+        faceUrl: '',
+        name: `GST#${this.config.id}-${Math.round(Math.random() * 4294967296)}`,
+        /**
+         * 其他：只能看到入群之后的历史消息
+         * 聊天室：群成员可以看到入群之前的历史消息
+         */
+        groupType: 'ChatRoom',
+        joinOption: 'FreeAccess'
+      },
+      opts
+    );
+    webimhandler.createGroup(groupOpts, cbOk, cbErr);
+  }
 
-    const selType = config.selType === 'C2C' ? C2C : GROUP;
-    this.initChat(config.selToID, selType);
+  init(config) {
+    const avChatRoomId = config.group;
+    this.isLogOn = config.isLogOn || false;
+    this.initChat(config);
     // 当前用户身份
     this.loginInfo = {
       sdkAppID: config.sdkappid, // 用户所属应用id,必填
       appIDAt3rd: config.sdkappid, // 用户所属应用id，必填
       accountType: config.accountType, // 用户所属应用帐号类型，必填
-      identifier: config.identifier, // 当前用户ID,必须是否字符串类型，选填
-      identifierNick: config.nickName || config.identifier, // 当前用户昵称，选填
+      identifier: config.id, // 当前用户ID,必须是否字符串类型，选填
+      identifierNick: config.nickName || config.id, // 当前用户昵称，选填
+      avatar: config.avatarUrl || '',
       userSig: config.userSig // 当前用户身份凭证，必须是字符串类型，选填
     };
 
@@ -60,7 +88,7 @@ export default class IM {
       '255': webimhandler.onCustomGroupNotify // 用户自定义通知(默认全员接收)
     };
 
-    const { onConnNotify, onMsgNotify, onLogin } = this.listeners;
+    const { onConnNotify, onMsgNotify, onReadyChat } = this.listeners;
     // 监听事件
     const listeners = {
       // 监听连接状态回调变化事件
@@ -111,7 +139,29 @@ export default class IM {
       listeners,
       options,
       avChatRoomId,
-      onLogin
+      loginSuccessInfo => {
+        console.log(loginSuccessInfo);
+        const { selType, selToID, toId } = this.config;
+        const invites = toId ? [toId] : [''];
+        if (selType === GROUP && !selToID) {
+          this.initGroup(
+            { invitedFriends: invites },
+            resp => {
+              console.log('===== 建群成功 =====');
+              console.log(resp);
+              // 创群成功后，重新初始化聊天配置
+              this.config.group = resp.GroupId;
+              this.initChat(this.config);
+              onReadyChat();
+            },
+            err => {
+              throw err;
+            }
+          );
+        } else {
+          onReadyChat();
+        }
+      }
     );
   }
 

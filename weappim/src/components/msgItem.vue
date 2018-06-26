@@ -1,10 +1,10 @@
 <template>
 <div class="wim-msg-box" :id='data.sessType + data.seq'>
-  <div 
+  <div
     :class="['wim-chat-message', isSelf ? 'self' : '']"
     v-if="!data.msgContent || (data.msgContent.type !== 'groupTip')"
   >
-    <img class="avatar" :src="isSelf ? 'https://cdn.suisuijiang.com/fiora/avatar/2.jpg' : 'https://cdn.suisuijiang.com/fiora/./avatar/10.jpg'" alt="sdf">
+    <img class="avatar" :src="avatarUrl" alt="avatar">
     <div
       class="right"
     >
@@ -35,14 +35,23 @@ export default {
       required: true
     },
     isSelf: {
-      type: Boolean
+      type: Boolean,
+      default: false
     },
     uiConfig: {
       type: Object
+    },
+    wechatAvatar: {
+      type: String
     }
   },
   created() {},
   computed: {
+    avatarUrl: function() {
+      return this.isSelf
+        ? this.data.fromAccountHead || this.wechatAvatar
+        : this.data.fromAccountHead;
+    },
     contentHTML: function() {
       const msgContent = this.data.msgContent;
       if (typeof msgContent === 'string') {
@@ -104,6 +113,7 @@ $tip-color: #a7a7a9;
     width: 88rpx;
     height: 88rpx;
     border-radius: 44rpx;
+    background-color: #dcdcdc;
   }
   .right {
     margin-left: 24rpx;
@@ -137,7 +147,7 @@ $tip-color: #a7a7a9;
     align-items: center;
     color: $font-color;
     font-size: 28rpx;
-    background: $chat;
+    background: white;
     padding: 12rpx 16rpx;
     border-radius: 16rpx;
     border-top-left-radius: 0;
@@ -178,7 +188,7 @@ $tip-color: #a7a7a9;
     }
     .content {
       color: rgba(255, 255, 255, 0.9);
-      background: $chat;
+      background: white;
       border-top-left-radius: 16rpx;
       border-top-right-radius: 0px;
     }
