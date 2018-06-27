@@ -16,6 +16,7 @@
       :im="im"
       @sendMsg="onSendMsg"
       @chooseImg="onChooseImg"
+      @recordSound="onRecordSound"
     ></chat-input>
   </div>
 </template>
@@ -215,6 +216,39 @@ export default {
         }
       };
       wx.chooseImage(opts);
+    },
+    onRecordSound() {
+      // todo
+      console.log('准备开始录音');
+      const recorderManager = wx.getRecorderManager();
+
+      recorderManager.onStart(() => {
+        console.log('recorder start');
+      });
+      recorderManager.onPause(() => {
+        console.log('recorder pause');
+      });
+      recorderManager.onStop(res => {
+        console.log('recorder stop', res);
+        const { tempFilePath } = res;
+        console.log('=========录音完成==========');
+        console.log(tempFilePath);
+      });
+      recorderManager.onFrameRecorded(res => {
+        const { frameBuffer } = res;
+        console.log('frameBuffer.byteLength', frameBuffer.byteLength);
+      });
+
+      const options = {
+        duration: 10000,
+        sampleRate: 44100,
+        numberOfChannels: 1,
+        encodeBitRate: 192000,
+        format: 'aac',
+        frameSize: 50
+      };
+
+      recorderManager.start(options);
     },
     uploadPic(opts, cbOk, cbErr) {
       this.im.sendPicMsg(opts, cbOk, cbErr);
