@@ -1,24 +1,12 @@
 <template>
 <div class="wim-chat-input">
-  <div class="record-btn" @click="toggleRecord">
-    {{ recordFlag ? '输入' : '录音' }}
-  </div>
   <input
-    v-show="!recordFlag"
     class="input-field"
     type="text"
     v-model="inputValue"
     placeholder=" 请在这里输入信息..."
     @confirm="sendMsg"
   >
-  <div
-    v-show="recordFlag"
-    @touchstart="onTouchStart"
-    @touchend="onTouchEnd"
-    :class="['start-record-btn', holdingRecord && 'holding']"
-  >
-    按住 说话
-  </div>
   <div class="more-btn" @click="chooseImg">
     更多
   </div>
@@ -35,9 +23,7 @@ export default {
   },
   data() {
     return {
-      inputValue: '',
-      recordFlag: false,
-      holdingRecord: false
+      inputValue: ''
     };
   },
   computed: {},
@@ -55,20 +41,6 @@ export default {
     },
     chooseImg() {
       this.$emit('chooseImg');
-    },
-    toggleRecord() {
-      this.recordFlag = !this.recordFlag;
-    },
-    recordSound() {
-      this.$emit('recordSound');
-    },
-    onTouchStart() {
-      console.log('on touch start');
-      this.holdingRecord = true;
-    },
-    onTouchEnd() {
-      console.log('on touch end');
-      this.holdingRecord = false;
     }
   }
 };
@@ -83,31 +55,9 @@ export default {
   z-index: 100;
   background: white;
   .input-field {
-    width: 65%;
-    margin: 16rpx auto 16rpx;
+    width: 75%;
+    margin: 16rpx 40rpx 16rpx 40rpx;
     border: 1px solid #dcdcdc;
-  }
-  .record-btn {
-    position: absolute;
-    left: 32rpx;
-    top: 16rpx;
-    padding: 8rpx 12rpx;
-    border-radius: 16rpx;
-    font-size: 28rpx;
-    border: 1px solid #dcdcdc;
-  }
-  .start-record-btn {
-    width: 65%;
-    margin: 16rpx auto 16rpx;
-    border: 1rpx solid #dcdcdc;
-    text-align: center;
-    border-radius: 8rpx;
-    font-weight: bold;
-    height: 57rpx;
-    line-height: 57rpx;
-    &.holding {
-      background-color: #dcdcdc;
-    }
   }
   .more-btn {
     position: absolute;

@@ -51,17 +51,8 @@ export default {
   },
 
   created() {
-    const userInfo = {
-      nickName: 'hwencc'
-    };
-    console.log('程序启动成功');
-    let flag = true;
-    setTimeout(() => {
-      if (flag) this.userInfo = userInfo;
-    }, 3 * 1000);
     // 调用应用实例的方法获取全局数据
     this.getUserInfo(userInfo => {
-      flag = false;
       ilog('登陆成功');
       ilog(userInfo);
     });
