@@ -60,7 +60,7 @@ export default {
     return {
       windowHeight: 0,
       top: 0,
-      bottom: 100,
+      bottom: 120,
       defaultMsg: {
         msgContent: {
           type: 'groupTip',

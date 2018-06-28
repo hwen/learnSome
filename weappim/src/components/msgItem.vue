@@ -4,17 +4,20 @@
     :class="['wim-chat-message', isSelf ? 'self' : '']"
     v-if="!data.msgContent || (data.msgContent.type !== 'groupTip')"
   >
-    <img class="avatar" :src="avatarUrl" alt="avatar">
+    <img class="avatar" v-if="!isSelf" :src="avatarUrl" alt="avatar">
     <div
       class="right"
     >
       <div class="nickname-time">
         <!-- <span class="tag"></span> -->
-        <span class="nickname">{{data.fromAccountNick}}</span>
+        <!--<span class="nickname">{{data.fromAccountNick}}</span>-->
         <!-- <span class="time">{{formatedTime}}</span> -->
       </div>
       <div class="content" :style="{background: styl.msgColor, color: styl.fontColor}">
-        <div class="text" v-html="contentHTML"></div>
+        <div class="text" v-if="data.msgContent.type!=='image'" v-html="contentHTML"></div>
+        <div class="text" v-else>
+          <image mode="widthFix" class="image" :src="data.msgContent.smallImg"></image>
+        </div>
       </div>
       <!-- <div class="arrow"></div> -->
     </div>
@@ -26,8 +29,6 @@
 </template>
 
 <script>
-import { formatTime } from '../utils';
-
 export default {
   props: {
     data: {
@@ -68,9 +69,6 @@ export default {
         }
       }
     },
-    formatedTime: function() {
-      return formatTime(new Date(this.data.time * 1000));
-    },
     styl: function() {
       let defaultStyl = {
         msgColor: '#fbd157',
@@ -80,9 +78,7 @@ export default {
       return this.isSelf ? self || defaultStyl : to || defaultStyl;
     }
   },
-  methods: {
-    formatTime: formatTime
-  }
+  methods: {}
 };
 </script>
 
@@ -171,7 +167,7 @@ $tip-color: #a7a7a9;
 
     .right {
       margin-left: 0;
-      margin-right: 24rpx;
+      /*margin-right: 24rpx;*/
       display: flex;
       flex-direction: column;
       align-items: flex-end;
@@ -206,8 +202,8 @@ $tip-color: #a7a7a9;
   .text {
     user-select: text;
     word-break: break-word;
-    & > img {
-      user-select: text;
+    .image {
+      width: 540rpx;
     }
   }
   .image {

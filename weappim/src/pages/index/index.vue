@@ -52,7 +52,16 @@ export default {
 
   created() {
     // 调用应用实例的方法获取全局数据
+    let flag = true;
+    setTimeout(() => {
+      if (flag) {
+        this.userInfo = {
+          nickName: 'hwencc'
+        };
+      }
+    }, 1.5 * 1000);
     this.getUserInfo(userInfo => {
+      flag = false;
       ilog('登陆成功');
       ilog(userInfo);
     });

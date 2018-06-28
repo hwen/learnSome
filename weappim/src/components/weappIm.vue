@@ -170,12 +170,13 @@ export default {
     },
     onChooseImg() {
       // const { IMAGE } = webim.UPLOAD_RES_TYPE;
+      // TODO: 后台实现上传逻辑
       const opts = {
         count: 1,
         success: files => {
           console.log(files);
           wx.uploadFile({
-            url: 'http://local.me:2333/upload/img',
+            url: 'http://172.30.10.65:2333/upload/img',
             filePath: files.tempFilePaths[0],
             name: 'img',
             formData: {

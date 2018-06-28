@@ -96,7 +96,7 @@ function handlderMsg(msg) {
   let msgContent = null;
 
   console.log('收到消息，并进行处理 handleMsg：');
-  console.log(msg);
+  // console.log(msg);
   console.log('sessType', sessType);
   switch (sessType) {
     case webim.SESSION_TYPE.C2C: //私聊消息
