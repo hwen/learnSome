@@ -16,7 +16,8 @@
       :im="im"
       @sendMsg="onSendMsg"
       @chooseImg="onChooseImg"
-      @recordSound="onRecordSound"
+      @recordStart="onRecordStart"
+      @recordEnd="onRecordEnd"
     ></chat-input>
   </div>
 </template>
@@ -50,6 +51,8 @@ export default {
       connMsg: '',
       // 有新消息时，滚动到新消息处
       toItem: '',
+      // wx 录音功能
+      recorder: null,
       pullHistoryCount: 0,
       wechatAvatar: '',
       msgList: [],
@@ -66,6 +69,7 @@ export default {
 
   created() {
     this.initIM(this.userInfo);
+    this.recorder = wx.getRecorderManager();
   },
 
   watch: {
@@ -176,7 +180,7 @@ export default {
         success: files => {
           console.log(files);
           wx.uploadFile({
-            url: 'http://local.me:2333/upload/img',
+            url: 'http://172.30.10.65:2333/upload/img',
             filePath: files.tempFilePaths[0],
             name: 'img',
             formData: {
@@ -190,7 +194,6 @@ export default {
 
               const uploadData = {
                 fromAccount: this.imConfig.id,
-                toAccount: this.imConfig.toId,
                 // 图片或文件的业务类型，群消息:1; c2c消息:2; 个人头像：3; 群头像：4
                 businessType: bsnType,
                 // fileType: 1,
@@ -217,41 +220,74 @@ export default {
       };
       wx.chooseImage(opts);
     },
-    onRecordSound() {
-      // todo
+    onRecordStart() {
       console.log('准备开始录音');
-      const recorderManager = wx.getRecorderManager();
+      // const { recorder } = this;
 
-      recorderManager.onStart(() => {
-        console.log('recorder start');
+      this.recorder.onStart(() => {
+        console.log('this.recorder start...');
       });
-      recorderManager.onPause(() => {
-        console.log('recorder pause');
+      this.recorder.onPause(() => {
+        console.log('this.recorder pause...');
       });
-      recorderManager.onStop(res => {
-        console.log('recorder stop', res);
-        const { tempFilePath } = res;
-        console.log('=========录音完成==========');
-        console.log(tempFilePath);
-      });
-      recorderManager.onFrameRecorded(res => {
-        const { frameBuffer } = res;
-        console.log('frameBuffer.byteLength', frameBuffer.byteLength);
+      this.recorder.onStop(res => {
+        console.log('this.recorder stop...', res);
+        const { tempFilePath, duration, fileSize } = res;
+        wx.uploadFile({
+          url: 'http://172.30.10.65:2333/upload/sound',
+          filePath: tempFilePath,
+          name: 'sound',
+          formData: {
+            test: 'hiall'
+          },
+          success: resp => {
+            console.log('====== upload resp =========');
+            const opts = JSON.parse(resp.data);
+            console.log(opts);
+            const bsnType = this.imConfig.selType === 'GROUP' ? 1 : 2;
+
+            const uploadData = {
+              // 图片或文件的业务类型，群消息:1; c2c消息:2; 个人头像：3; 群头像：4
+              businessType: bsnType,
+              duration: Math.round(duration / 1000),
+              fileMd5: opts.md5,
+              totalSize: fileSize,
+              base64Str: opts.base64Str
+            };
+            console.log('ready upload data..........');
+            console.log(uploadData);
+            this.uploadSound(
+              uploadData,
+              uploadRes => {
+                console.log('上传成功。。。。。');
+                console.log(uploadRes);
+              },
+              uploadErr => {
+                console.log('上传错误。。。。。');
+                console.log(uploadErr);
+              }
+            );
+          }
+        });
       });
 
       const options = {
-        duration: 10000,
-        sampleRate: 44100,
+        duration: 90 * 1000, // 最长录音一分半钟
         numberOfChannels: 1,
-        encodeBitRate: 192000,
-        format: 'aac',
-        frameSize: 50
+        format: 'mp3'
       };
 
-      recorderManager.start(options);
+      this.recorder.start(options);
+    },
+    onRecordEnd() {
+      console.log('准备完成录音。。。');
+      this.recorder.stop();
     },
     uploadPic(opts, cbOk, cbErr) {
       this.im.sendPicMsg(opts, cbOk, cbErr);
+    },
+    uploadSound(opts, cbOk, cbErr) {
+      this.im.sendSoundMsg(opts, cbOk, cbErr);
     }
   }
 };

@@ -2,6 +2,7 @@ const fs = require('fs');
 const express = require('express');
 const multer = require('multer');
 const md5 = require('md5');
+const m3Duration = require('mp3-duration');
 const app = express();
 const upload = multer({ dest: 'uploads/' });
 
@@ -45,12 +46,17 @@ app.post('/upload/sound', upload.single('sound'), function(req, res, next) {
     if (err) throw err;
     fs.unlinkSync(req.file.path);
     console.log(data);
-    res.json({
-      base64Str: data.toString('base64'),
-      totalSize: req.file.size,
-      length: data.length,
-      bl: data.byteLength,
-      md5: md5(data)
+    m3Duration(data, (err, duration) => {
+      if (err) return console.log(err.message);
+      console.log('Your file is ' + duration + ' seconds long');
+      res.json({
+        base64Str: data.toString('base64'),
+        totalSize: req.file.size,
+        length: data.length,
+        duration: duration,
+        bl: data.byteLength,
+        md5: md5(data)
+      });
     });
   });
 });

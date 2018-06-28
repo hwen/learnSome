@@ -1976,7 +1976,14 @@ module.exports = (function() {
             break;
           case MSG_ELEMENT_TYPE.SOUND: //
             log.warn('web端暂不支持发送语音消息');
-            continue;
+            msgContent = {
+              UUID: elem.content.uuid,
+              Second: elem.content.second,
+              Size: elem.content.size,
+              Download_Flag: elem.content.downFlag
+            };
+            console.log('web端暂不支持发送语音消息');
+            console.log(msgContent);
             break;
           case MSG_ELEMENT_TYPE.LOCATION: //
             log.warn('web端暂不支持发送地理位置消息');
@@ -2012,6 +2019,8 @@ module.exports = (function() {
           MsgType: msgType,
           MsgContent: msgContent
         });
+        console.log('after ref.......');
+        console.log(msgInfo.MsgBody);
       }
       if (msg.sess.type() == SESSION_TYPE.C2C) {
         //私聊
@@ -3478,6 +3487,10 @@ module.exports = (function() {
     Msg.prototype.addFile = function(file) {
       this.addElem(new webim.Msg.Elem(MSG_ELEMENT_TYPE.FILE, file));
     };
+    //声音
+    Msg.prototype.addSound = function(file) {
+      this.addElem(new webim.Msg.Elem(MSG_ELEMENT_TYPE.SOUND, file));
+    };
     //自定义
     Msg.prototype.addCustom = function(custom) {
       this.addElem(new webim.Msg.Elem(MSG_ELEMENT_TYPE.CUSTOM, custom));
@@ -3668,7 +3681,7 @@ module.exports = (function() {
 
       //根据不同情况拉取数据
       //是否需要申请下载地址  0:到架平申请  1:到cos申请  2:不需要申请, 直接拿url下载
-      if (downFlag !== undefined && busiId !== undefined) {
+      if (downFlag !== undefined && this.busiId !== undefined) {
         getFileDownUrlV2(
           uuid,
           senderId,

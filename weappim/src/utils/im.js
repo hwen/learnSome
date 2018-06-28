@@ -180,6 +180,11 @@ export default class IM {
   }
 
   sendPicMsg(opts, cbOk, cbErr) {
-    webimhandler.sendPicMsg(opts, cbOk, cbErr);
+    // webimhandler.sendPicMsg(opts, cbOk, cbErr);
+    webimhandler.sendMediaMsg('image', opts, cbOk, cbErr);
+  }
+
+  sendSoundMsg(opts, cbOk, cbErr) {
+    webimhandler.sendMediaMsg('sound', opts, cbOk, cbErr);
   }
 }

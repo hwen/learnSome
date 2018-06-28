@@ -11,14 +11,15 @@
     placeholder=" 请在这里输入信息..."
     @confirm="sendMsg"
   >
-  <div
+  <button
     v-show="recordFlag"
+    open-type="openSetting"
     @touchstart="onTouchStart"
     @touchend="onTouchEnd"
     :class="['start-record-btn', holdingRecord && 'holding']"
   >
     按住 说话
-  </div>
+  </button>
   <div class="more-btn" @click="chooseImg">
     更多
   </div>
@@ -64,11 +65,13 @@ export default {
     },
     onTouchStart() {
       console.log('on touch start');
+      this.$emit('recordStart');
       this.holdingRecord = true;
     },
     onTouchEnd() {
       console.log('on touch end');
       this.holdingRecord = false;
+      this.$emit('recordEnd');
     }
   }
 };

@@ -7,7 +7,6 @@ var selToID,
   sdkAppID,
   avChatRoomId,
   selType,
-  selToID,
   selSess,
   selSessHeadUrl;
 
@@ -1391,15 +1390,37 @@ function applyJoinGroup(opts, cbOk, cbErr) {
   );
 }
 
-function sendPicMsg(opts, cbOk, cbErr) {
+// 发送多媒体消息，如图片，语音，文件等
+function sendMediaMsg(type, opts, cbOk, cbErr) {
   const pos = opts.base64Str.indexOf(',');
   if (pos != -1) {
     opts.base64Str = opts.base64Str.substr(pos + 1);
   }
+  // 发送消息的方法
+  let sendFn = null;
+  let fileType = 1; //文件类型，不填为默认认为上传的是图片；1：图片；2：文件；3：短视频；4：PTT
+  switch (type) {
+    case 'image':
+      sendFn = sendPic;
+      break;
+    case 'sound':
+      sendFn = sendSound;
+      fileType = 2;
+      break;
+  }
+  Object.assign(opts, {
+    fromAccount: loginInfo.identifier,
+    toAccount: selToID,
+    fileType: fileType
+  });
+  console.log('=== upload file base64 opts: ===');
+  console.log(opts);
   webim.uploadFileByBase64(
     opts,
     resp => {
-      sendPic(resp, cbOk, cbErr);
+      console.log('=========== webim upload file =======');
+      console.log(resp);
+      sendFn(Object.assign(opts, resp), cbOk, cbErr);
     },
     cbErr
   );
@@ -1462,10 +1483,56 @@ function sendPic(images, cbOk, cbErr) {
   );
 }
 
+function sendSound(sound, cbOk, cbErr) {
+  console.log('ready to send sound msg...');
+  console.log(sound);
+  let friendHeadUrl = '';
+  if (!selToID) {
+    cbErr('您还没有好友，暂不能聊天');
+    return;
+  }
+  if (!selSess) {
+    selSess = new webim.Session(
+      selType,
+      selToID,
+      selToID,
+      friendHeadUrl,
+      Math.round(new Date().getTime() / 1000)
+    );
+  }
+  let msg = new webim.Msg(selSess, true);
+  let downFlag = 2;
+  let { duration, totalSize } = sound;
+  let soundObj = new webim.Msg.Elem.Sound(
+    sound.File_UUID,
+    duration,
+    totalSize,
+    loginInfo.identifier,
+    selToID,
+    downFlag,
+    selType
+  );
+  msg.addSound(soundObj);
+  console.log('new sound msg....');
+  console.log(msg);
+  webim.sendMsg(
+    msg,
+    function(resp) {
+      console.log('send sound msg success.............');
+      cbOk && cbOk(msg);
+    },
+    function(err) {
+      console.log('send sound msg err.............');
+      cbErr && cbErr(err);
+      console.error(err.ErrorInfo);
+    }
+  );
+}
+
 module.exports = {
   init: init,
   setLog: setLog,
-  sendPicMsg: sendPicMsg,
+  sendMediaMsg: sendMediaMsg,
   applyJoinGroup: applyJoinGroup,
   isLogin: () => loginInfo && loginInfo.identifier,
   getLastC2CHistoryMsgs: getLastC2CHistoryMsgs,
