@@ -1,98 +1,82 @@
-const fs = require('fs');
-const zlib = require('zlib');
+/* eslint-disable */
 const express = require('express');
 const multer = require('multer');
-const md5 = require('md5');
-const m3Duration = require('mp3-duration');
-const request = require('request')
+const request = require('request');
 const app = express();
 const upload = multer({ dest: 'uploads/' });
 const proxy = require('http-proxy-middleware');
+const modifyRes = require('./modifyRes');
 
+// proxy qn webrtc
 const qnHost = 'https://demo-rtc.qnsdk.com';
 
-const script = `<script type="text/javascript">
-var title = document.querySelector('.title__3uxox');
-console.log(title)
-var name = document.querySelector('#username');
-name.innerHTML = 'IamFromNodejs';
-localStorage.setItem('userid', 'halloman');
+// insert before web script
+const firstScript = `<script type="text/javascript">
+document.title = 'proxy your site man';
+var store = localStorage;
+if (!store.getItem('userid')) {
+  var randomId = 'halloman' + Math.round(Math.random() * 100234);
+  store.setItem('userid', randomId);
+}
 </script>`;
+
+// hide stats ui
+const script = `<script type="text/javascript">
+var stat = document.querySelector('.stats__3FGWY');
+var roomName = document.querySelector('.roomName__31vKZ');
+var avatars = document.querySelector('#avatars');
+if (stat) {
+  stat.parentNode.removeChild(stat);
+}
+if (roomName) {
+  roomName.innerHTML = 'Yoyooo man';
+}
+if (avatars) {
+  avatars.parentNode.removeChild(avatars);
+}
+</script>`;
+
+const addScript = body => {
+  console.log('body:', body);
+  let result = '';
+  let preStr = body.slice(0, body.indexOf('</body>'));
+  preStr = preStr.replace('/styles.css', `${qnHost}/styles.css`);
+  const scriptPre = '<script type="text/javascript" src="';
+
+  const rgx = /\<script type=\"text\/javascript\" src=\"/g;
+  // 插入 firstScript
+  preStr = preStr.replace(scriptPre, `${firstScript}${scriptPre}`);
+  preStr = preStr.replace(rgx, `<script type="text/javascript" src="${qnHost}`);
+
+  // 插入脚本
+  result = `${preStr}${script}</body>
+  </html>`;
+  return result;
+};
 
 // proxy middleware options
 const options = {
-        target: 'https://demo-rtc.qnsdk.com', // target host
-        changeOrigin: true,               // needed for virtual hosted sites
-        ws: true,                         // proxy websockets
-        // pathRewrite: {
-        //     '^/api/old-path' : '/api/new-path',     // rewrite path
-        //     '^/api/remove/path' : '/path'           // remove base path
-        // },
-        onProxyRes: function (proxyRes, req, res) {
-          const end = res.end;
-          const writeHead = res.writeHead;
-          let writeHeadArgs;
-          let body;
-          let buffer = new Buffer('');
-          const manipulateBody = (body) => {
-            console.log('======= fuck you man ===========')
-            console.log(body)
-          }
+  target: 'https://demo-rtc.qnsdk.com', // target host
+  changeOrigin: true, // needed for virtual hosted sites
+  ws: true, // proxy websockets
+  onProxyRes: function(proxyRes, req, res) {
+    console.log(req.url);
+    if (req.url == '/' || req.url == '/room/heiman') {
+      modifyRes(res, proxyRes, body => {
+        console.log('on data...');
+        console.log(body);
+        return addScript(body);
+      });
+    }
+  },
+  router: {
+    // your site : target site
+    'https://local.me:2333': 'https://demo-rtc.qnsdk.com'
+  }
+};
 
-          // Concat and unzip proxy response
-          proxyRes
-            .on('data', (chunk) => {
-              buffer = Buffer.concat([buffer, chunk]);
-            })
-            .on('end', () => {
-              body = zlib.gunzipSync(buffer).toString('utf8');
-            });
-
-          // Defer write and writeHead
-          res.write = () => {};
-          res.writeHead = (...args) => { writeHeadArgs = args; };
-
-          // Update user response at the end
-          res.end = () => {
-            const output = manipulateBody(body); // some function to manipulate body
-            // res.setHeader('content-length', output.length);
-            // res.setHeader('content-encoding', '');
-            writeHead.apply(res, writeHeadArgs);
-
-            end.apply(res, [output]);
-          };
-        },
-        router: {
-            // when request.headers.host == 'dev.localhost:3000',
-            // override target 'http://www.example.org' to 'http://localhost:8000'
-            'http://local.me:2333' : 'https://demo-rtc.qnsdk.com'
-        }
-    };
-
-// app.get('/', (req, res) => {
-//   res.send('hallo world~');
-// });
-const exampleProxy = proxy(options);
-app.use('/', exampleProxy);
-
-
-app.get('/alltest', (req, res) => {
-  const url = 'https://demo-rtc.qnsdk.com/room/gsttest';
-  request(url, (error, response, body) => {
-    console.log('body:', body);
-    let result = '';
-    let preStr = body.slice(0, body.indexOf('</body>'));
-    preStr = preStr.replace('/styles.css', `${qnHost}/styles.css`);
-    const scriptPre = '<script type="text/javascript" src="';
-    const rgx = /\<script type=\"text\/javascript\" src=\"/g
-    preStr = preStr.replace(rgx, `<script type="text/javascript" src="${qnHost}`);
-
-    result = `${preStr}${script}</body>
-    </html>`;
-    
-    res.send(result)
-  })
-})
+const proxyWebRtc = proxy(options);
+app.use('/', proxyWebRtc);
 
 app.listen(2333, () => {
   console.log('Express server listening on 2333');
