@@ -62,6 +62,10 @@ function getQueryObject(url) {
   return obj;
 }
 
+function getType(v) {
+  return Object.prototype.toString.call(v).slice(8, -1);
+}
+
 // tiny version of lodash get
 function get(obj = {}, path = '', defaultValue = null) {
   return (
@@ -74,7 +78,8 @@ function get(obj = {}, path = '', defaultValue = null) {
 
 let obj = { a: { name: 'bbb', shop: { addr: 'cccd' }, arr: [] } };
 ilog('==== get =======');
-ilog(obj);
+ilog(get(null, 'a.arr'));
+ilog(get(45, 'a.arr'));
 ilog(get(obj, 'a.arr'));
 ilog(get(obj, 'a.name'));
 ilog(get(obj, 'a.shop.addr'));
@@ -84,7 +89,8 @@ ilog(get(obj, 'a[shop].ojbk'));
 ilog(get(obj, 'a.xxx.ojbk'));
 ilog(get(obj, 'xxx.xxx.ojbk'));
 
-function omit(obj = {}, omits = []) {
+function omit(obj, omits = []) {
+  if (!obj || typeof obj !== 'object') return null;
   return Object.keys(obj).reduce((o, key) => {
     if (!omits.includes(key)) {
       o[key] = obj[key];
@@ -93,7 +99,8 @@ function omit(obj = {}, omits = []) {
   }, {});
 }
 
-function pick(obj = {}, picks = []) {
+function pick(obj, picks = []) {
+  if (!obj || typeof obj !== 'object') return null;
   return Object.keys(obj).reduce((o, key) => {
     if (picks.includes(key)) {
       o[key] = obj[key];
@@ -104,6 +111,9 @@ function pick(obj = {}, picks = []) {
 
 obj = { a: '123231', b: 'dafdsa', name: 'hallo', say: () => {}, circle: obj };
 ilog('===== omit & pick =======');
+ilog(pick(null, ['name', 'b']));
+ilog(pick(undefined, ['name', 'b']));
+ilog(pick(45, ['name', 'b']));
 ilog(omit(obj, ['name', 'b']));
 ilog(omit(obj, ['obj', 'circle']));
 ilog(pick(obj, ['name', 'say', 'circle']));
