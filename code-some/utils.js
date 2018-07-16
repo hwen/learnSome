@@ -67,12 +67,12 @@ function getType(v) {
 }
 
 // tiny version of lodash get
-function get(obj = {}, path = '', defaultValue = null) {
+function get(obj = {}, path = '') {
   return (
     path
       .replace(/\[(.+?)\]/g, '.$1')
       .split('.')
-      .reduce((o, key) => o && o[key], obj) || defaultValue
+      .reduce((o, key) => o && o[key], obj)
   );
 }
 
