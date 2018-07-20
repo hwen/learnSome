@@ -68,19 +68,18 @@ function getType(v) {
 
 // tiny version of lodash get
 function get(obj = {}, path = '') {
-  return (
-    path
-      .replace(/\[(.+?)\]/g, '.$1')
-      .split('.')
-      .reduce((o, key) => o && o[key], obj)
-  );
+  return path
+    .replace(/\[(.+?)\]/g, '.$1')
+    .split('.')
+    .reduce((o, key) => o && o[key], obj);
 }
 
-let obj = { a: { name: 'bbb', shop: { addr: 'cccd' }, arr: [] } };
+let obj = { a: { name: 'bbb', shop: { addr: 'cccd' }, arr: ['idx1', 'idx2'] } };
 ilog('==== get =======');
 ilog(get(null, 'a.arr'));
 ilog(get(45, 'a.arr'));
 ilog(get(obj, 'a.arr'));
+ilog(get(obj, 'a.arr[1]'));
 ilog(get(obj, 'a.name'));
 ilog(get(obj, 'a.shop.addr'));
 ilog(get(obj, 'a[shop][addr]'));
@@ -118,3 +117,21 @@ ilog(omit(obj, ['name', 'b']));
 ilog(omit(obj, ['obj', 'circle']));
 ilog(pick(obj, ['name', 'say', 'circle']));
 ilog(pick(obj, ['xxx', 'circle']));
+
+/**
+ * Format a date like YYYY-MM-DD.
+ *
+ * @param {string} template
+ * @param {Date=} [date]
+ * @return {string}
+ */
+function formatDate(template, date) {
+  var specs = 'YYYY:MM:DD:HH:mm:ss'.split(':');
+  date = new Date(date || Date.now() - new Date().getTimezoneOffset() * 6e4);
+  return date
+    .toISOString()
+    .split(/[-:.TZ]/)
+    .reduce(function(template, item, i) {
+      return template.split(specs[i]).join(item);
+    }, template);
+}
