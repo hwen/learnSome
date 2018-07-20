@@ -68,6 +68,9 @@ function getType(v) {
 
 // tiny version of lodash get
 function get(obj = {}, path = '') {
+  console.log('================')
+  console.log(path.replace())
+  console.log('================')
   return path
     .replace(/\[(.+?)\]/g, '.$1')
     .split('.')
@@ -80,10 +83,16 @@ ilog(get(null, 'a.arr'));
 ilog(get(45, 'a.arr'));
 ilog(get(obj, 'a.arr'));
 ilog(get(obj, 'a.arr[1]'));
+
+ilog('- - -');
+
 ilog(get(obj, 'a.name'));
-ilog(get(obj, 'a.shop.addr'));
+ilog(get(obj, '[a][shop].addr')); // 如果第一个是中括号，会有问题
 ilog(get(obj, 'a[shop][addr]'));
 ilog(get(obj, 'a[shop].addr'));
+
+ilog('- - -');
+
 ilog(get(obj, 'a[shop].ojbk'));
 ilog(get(obj, 'a.xxx.ojbk'));
 ilog(get(obj, 'xxx.xxx.ojbk'));
