@@ -68,9 +68,6 @@ function getType(v) {
 
 // tiny version of lodash get
 function get(obj = {}, path = '') {
-  console.log('================')
-  console.log(path.replace())
-  console.log('================')
   return path
     .replace(/\[(.+?)\]/g, '.$1')
     .split('.')
