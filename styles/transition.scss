@@ -1,0 +1,57 @@
+/* normal: "#92e6e6",
+  error: "#ff5335",
+  info: "#2994b2",
+  warn: "#ffb400" */
+
+/**
+ * Vstart = 开始值; Vend = 结束值; Vres = 中间值; p = 过渡函数的输出值
+ * Vres = (1 - p) * Vstart + p * Vend
+ * 当Vres具有有效值时，则该CSS样式可过渡
+ *
+ * transition-timing-function 就是计算每个 property 的中间值
+ * 有三个可选值，前置函数，steps函数，bezier函数（贝塞尔函数）
+ *
+ * ease: 开始和结束慢，中间快。相当于cubic-bezier(0.25,0.1,0.25,1)
+ * linear: 匀速。相当于cubic-bezier(0,0,1,1)
+ * ease-in: 开始慢。相当于cubic-bezier(0.42,0,1,1)
+ * ease-out: 结束慢。相当于cubic-bezier(0,0,0.58,1)
+ * ease-in-out: 和ease类似，但比ease幅度大。相当于cubic-bezier(0.42,0,0.58,1)
+ * step-start: 直接位于结束处。相当于steps(1,start)
+ * step-end: 位于开始处经过时间间隔后结束。相当于steps(1,end)
+ *
+ * 若过渡起始值或过渡开始值为auto，则浏览器不会自己计算成具体数字值，而是不发生过渡效果。
+ *
+ * 实验发现，在 chrome 下，height: 100%，这种也是不行的。跟 auto 类似。
+ */  
+.base {
+  background: #ff5335;
+  width: 100px;
+  height: 100px;
+  color: white;
+  font-size: 24px;
+  transition-duration: 2s;
+  transition-timing-function: ease;
+  /* transition-property: font-size; */
+  /* transition-property: text-indent; */
+  /* transition-property: margin; */
+  transition-property: all;
+  transition-delay: 0;
+  box-sizing: border-box;
+}
+
+/* font-size 变 0 在 chrome 下竟然有bug，edge 下是好的 */
+/* 第一次 hover 的时候，可以看到某些属性的变化是比较生硬的，
+/* 比方说 border，但是短时间内（大概1秒），重复hover可以看到动作变得流畅了许多， */
+/* 可以看到 chrome 的渲染引擎是做了缓存的。过了大概5s后，再次hover，动画再次僵硬 */
+/* 用 border 的变化，配合 box-sizing: border-box 可以产生按钮被按下的效果 */
+.base:hover {
+  /* width: 400px; */
+  /* background: #2994b2; */
+  /* margin-left: 100px; */
+  /* font-size: 0px; */
+  /* opacity: 0; */
+  /* text-indent: 50px; */
+  /* font-size: 50px; */
+  /* border: 10px solid #2994b2; */
+}
+
