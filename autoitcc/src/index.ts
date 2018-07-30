@@ -1,10 +1,5 @@
-// import au from './utils/autoitcc';
 import tool from './utils';
-// import au from 'autoit';
-const au = require('autoit');
+import { logMousePos, openNotePad } from './utils/auto';
 
-tool.hi();
-au.Init();
-au.Run('notepad.exe');
-au.WinWait('[Class:Notepad]');
-au.Send('Hello, autoit & nodejs!');
+openNotePad();
+logMousePos();
