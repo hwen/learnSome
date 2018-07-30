@@ -15,3 +15,9 @@ export function logMousePos(second: number = 10): void {
     console.log('鼠标位置：' + JSON.stringify(au.MouseGetPos()));
   }, 1000);
 }
+
+export function randomMove(): void {
+  for (let i = 0; i < 40; i++) {
+    au.MouseMove(1000 * Math.random(), 1000 * Math.random(), 200);
+  }
+}
