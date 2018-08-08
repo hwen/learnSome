@@ -142,9 +142,19 @@ function formatDate(template, date) {
     }, template);
 }
 
+/**
+ *
+ * other infomations: 
+ * https://developer.mozilla.org/en-US/docs/Web/API/Performance_API
+ * https://developers.google.com/web/tools/chrome-devtools/rendering-tools/
+ * https://css-tricks.com/paint-timing-api/
+ * @returns
+ */
+
 function getAllListeners() {
   const taglist = document.body.getElementsByTagName('*');
   let count = {};
+  let total = 0;
 
   for (let i = 0; i < taglist.length; i++) {
     /* eslint-disable no-undef */
@@ -152,10 +162,13 @@ function getAllListeners() {
     /* eslint-enable no-undef */
     const keys = Object.keys(listeners);
     keys.reduce((ct, key) => {
-      ct[key] = ct[key] ? ct[key] + listeners[key].length : listeners[key].length;
+      const len = listeners[key].length;
+      total += len;
+      ct[key] = ct[key] ? ct[key] + len : len;
       return ct;
     }, count)
   }
 
+  count.total = total;
   return count;
 }
