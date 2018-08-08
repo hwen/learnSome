@@ -141,3 +141,21 @@ function formatDate(template, date) {
       return template.split(specs[i]).join(item);
     }, template);
 }
+
+function getAllListeners() {
+  const taglist = document.body.getElementsByTagName('*');
+  let count = {};
+
+  for (let i = 0; i < taglist.length; i++) {
+    /* eslint-disable no-undef */
+    const listeners = getEventListeners(taglist[i]);
+    /* eslint-enable no-undef */
+    const keys = Object.keys(listeners);
+    keys.reduce((ct, key) => {
+      ct[key] = ct[key] ? ct[key] + listeners[key].length : listeners[key].length;
+      return ct;
+    }, count)
+  }
+
+  return count;
+}

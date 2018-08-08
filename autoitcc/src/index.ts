@@ -1,6 +1,14 @@
 import tool from './utils';
-import { logMousePos, openNotePad, randomMove } from './utils/auto';
+import {
+  logMousePos,
+  openNotePad,
+  randomMove,
+  getPosition,
+  searchPixel
+} from './utils/auto';
 
-openNotePad();
+// openNotePad();
 // logMousePos();
-randomMove();
+// randomMove();
+// getPosition();
+searchPixel();
