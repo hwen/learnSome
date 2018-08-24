@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>Document</title>
+</head>
+<body>
+  hallo world~
+  <div style='background: burlywood;'>
+    fuck you man
+  </div>
+</body>
+<script>
+  if("performance" in window){
+  window.addEventListener("load", ()=>{
+    let paintMetrics = performance.getEntriesByType("paint");
+    console.log('==== performance ====')
+    console.log(performance)
+    console.log('==== PerformanceEntry ====')
+    console.log(PerformanceEntry)
+    console.log('==== PerformanceFrameTiming ====')
+    // console.log(PerformanceFrameTiming)
+    console.log('==== PerformanceMark ====')
+    console.log(PerformanceMark)
+    console.log('==== PerformanceMeasure ====')
+    console.log(PerformanceMeasure)
+    console.log('==== PerformanceNavigationTiming ====')
+    console.log(PerformanceNavigationTiming)
+    console.log('==== PerformanceResourceTiming ====')
+    console.log(PerformanceResourceTiming)
+
+    if(paintMetrics !== undefined && paintMetrics.length > 0){
+      paintMetrics.forEach((paintMetric)=>{
+        console.log(`${paintMetric.name}: ${paintMetric.startTime}`);
+      });
+    }
+  });
+}
+
+if("PerformanceObserver" in window){
+  let observerPromise = new Promise((resolve, reject)=>{
+    let observer = new PerformanceObserver((list)=>{
+      resolve(list);
+    });
+
+    observer.observe({
+      entryTypes: ["paint"]
+    });
+  }).then((list)=>{
+    list.getEntries().forEach((entry)=>{
+      console.log(`${entry.name}: ${entry.startTime}`);
+    });
+  }).catch((error)=>{
+    console.warn(error);
+  });
+}
+
+function print_PerformanceEntries() {
+  // Use getEntries() to get a list of all performance entries
+  var p = performance.getEntries();
+  for (var i=0; i < p.length; i++) {
+    console.log("PerformanceEntry[" + i + "]");
+    print_PerformanceEntry(p[i]);
+  }
+}
+function print_PerformanceEntry(perfEntry) {
+  var properties = ["name",
+                    "entryType",
+                    "startTime",
+                    "duration"];
+
+  for (var i=0; i < properties.length; i++) {
+    // Check each property
+    var supported = properties[i] in perfEntry;
+    if (supported) {
+      var value = perfEntry[properties[i]];
+      console.log("... " + properties[i] + " = " + value);
+    } else {
+      console.log("... " + properties[i] + " is NOT supported");
+    }
+  }
+}
+
+print_PerformanceEntries()
+</script>
+</html>
