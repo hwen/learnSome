@@ -18,13 +18,34 @@ export function throttle(fn, delay) {
   };
 }
 
+/**
+ * _.throttle 方法，只不过是多给 debounce 传了一个 maxWait 选项，
+ * 这个选项的意思是至少保证在每 maxWait 时间让 func 被调用一次。
+ *
+ * @export
+ * @param {*} fn
+ * @param {*} delay
+ * @returns
+ */
+export function throttle2(fn, delay) {
+  let timer;
+  return function(...arg) {
+    if (!timer) {
+      timer = setTimeout(function() {
+        fn(...arg);
+        timer = null;
+      }, delay);
+    }
+  };
+}
+
 export function debounce(fn, delay) {
   let timer;
   return function(...arg) {
     if (timer) clearTimeout(timer);
     timer = setTimeout(function() {
-      timer = null;
       fn(...arg);
+      timer = null;
     }, delay);
   };
 }
