@@ -33,7 +33,6 @@ export default class Request {
   }
 
   async _fetch (options) {
-    console.log('mode: fetch')
     const { url, method, data, headers } = options
 
     /**
@@ -64,7 +63,6 @@ export default class Request {
   }
 
   async _xhr (options) {
-    console.log('mode: xhr')
     return new Promise((resolve, reject) => {
       const { url, method, data, headers } = options
       const xhr = window.XMLHttpRequest
@@ -100,7 +98,7 @@ export default class Request {
       }
 
       xhr.onload = () => {
-        if ((xhr.statusText === 'OK' && xhr.status === 200) || typeof xhr.statusText === 'undefined') {
+        if (xhr.status === 200) {
           resolve(this._parse(xhr))
         } else {
           reject(this._parse(xhr))
@@ -131,6 +129,7 @@ export default class Request {
 
   post (url, data, headers, fetch = false) {
     return this.fetch({
+      url: url,
       method: 'POST',
       data: data,
       headers: headers,
