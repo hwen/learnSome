@@ -2,6 +2,7 @@ const getAsync = (params) => {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       resolve({ a: params });
+      // reject({a: 'fuck fuck....'});
     }, 500);
   });
 };
@@ -14,6 +15,8 @@ const getB = () => {
       b: resp,
       test: 'hallo'
     };
+  }).catch(err => {
+    throw err;
   });
 };
 
@@ -22,6 +25,9 @@ getB().then(resp => {
   console.log('======== after ==========');
   console.log(resp);
   // 输出 { b: { a:1 }, test: 'hallo' }
+}).catch(err => {
+  console.log('========== what the fucking err ==========');
+  console.log(err)
 });
 
 // 测试 async/await 在 for 循环里使用
