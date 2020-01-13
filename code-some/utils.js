@@ -172,3 +172,19 @@ function getAllListeners() {
   count.total = total;
   return count;
 }
+
+
+function downloadURI(url) {
+    if (window.__UA__ && window.__UA__.isMobile) {
+        let _win = window.top || window
+        _win.location.href = url
+    } else {
+        try {
+            var elemIF = document.createElement('iframe')
+            elemIF.src = url
+            elemIF.style.display = 'none'
+            document.body.appendChild(elemIF)
+            return elemIF
+        } catch (e) {}
+    }
+}
